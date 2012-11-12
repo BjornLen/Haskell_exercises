@@ -19,7 +19,9 @@ substitute w t s = concat [replace w x s | x <- t]
 match :: Eq a => a -> [a] -> [a] -> Maybe [a]
 match w [] [] = Just []
 match w [] (s:ss) = Nothing
-match w (t:ts) [] = Nothing
+match w (t:ts) []
+	| w == t = match w ts []
+	| otherwise = Nothing
 match w (t:ts) (s:ss)
 	| t == s = match w ts ss
 	| t == w = orElse (singleWildcardMatch (t:ts) (s:ss)) ( longerWildcardMatch (t:ts) (s:ss))
