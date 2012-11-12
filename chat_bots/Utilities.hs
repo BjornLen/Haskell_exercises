@@ -1,3 +1,5 @@
+module Utilities where
+
 -- Takes two functions and two value inputs and apples function one to the first
 -- value input and vice versa.
 map2 :: (a -> b, c -> d) -> (a, c) -> (b, d)

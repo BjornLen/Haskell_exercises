@@ -6,11 +6,13 @@ import Utilities
 -- Match and substitute
 --------------------------------------------------------
 
+
 -- Replaces a wildcard in a list with the list given as the third argument
 substitute :: Eq a => a -> [a] -> [a] -> [a]
-substitute _ _ _ = []
-{- TO BE WRITTEN -}
-
+substitute w t s = concat [replace w x s | x <- t]
+	where replace wild sub val
+		| sub == wild = val
+		| otherwise = [sub]
 
 -- Tries to match two lists. If they match, the result consists of the sublist
 -- bound to the wildcard in the pattern list.
