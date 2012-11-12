@@ -1,6 +1,12 @@
+-- Takes two functions and two value inputs and apples function one to the first
+-- value input and vice versa.
+map2 :: (a -> b, c -> d) -> (a, c) -> (b, d)
+map2 (f1, f2) (x1, x2) = (f1 x1, f2 x2)
+
+
 -- Takes a function and a Maybe value as input. If the value if nothing then
 -- return nothing, otherwhise return the function applied to the Just value
-p :: (a -> b) -> Maybe a -> Maybe b
+mmap :: (a -> b) -> Maybe a -> Maybe b
 mmap f  Nothing  = Nothing
 mmap f (Just x)  = Just (f x)
 
@@ -25,3 +31,15 @@ fix f x
 -- element in a list
 pick :: RealFrac r => r -> [a] -> a
 pick u xs = xs !! (floor.(u*).fromIntegral.length) xs
+
+replace :: Eq a => a -> a -> [a] -> [a]
+replace wild sub val  
+       | sub == wild = val
+       | otherwise = [sub]
+
+substitute :: Eq a => a -> [a] -> [a] -> [a]
+substitute w [] s  = []
+substitute w t s = concat [replace w x s | x <- t]
+
+-- match :: Eq a => a -> [a] -> [a] -> Maybe [a]
+-- match wildcard p s = Just p
