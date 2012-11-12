@@ -26,16 +26,18 @@ match w (t:ts) (s:ss)
 	| otherwise = Nothing
 
 -- Helper function to match
-singleWildcardMatch, longerWildcardMatch :: Eq a => [a] -> [a] -> Maybe [a]
+singleWildcardMatch :: Eq a => [a] -> [a] -> Maybe [a]
 singleWildcardMatch (wc:ps) (x:xs)
 	| match wc ps xs /= Nothing = Just [x]
-	| otherwise = Nothing
+	| otherwise = Nothing 
 
-longerWildcardMatch (wc:ps) (x:xs)
-	| Nothing 
+longerWildcardMatch :: Eq a => [a] -> [a] -> Maybe [a]
+longerWildcardMatch (wc:ps) (x:xs) 
+	| match wc (wc:ps) xs /= Nothing = Just (ack ps (x:xs)) 
 	| otherwise = Nothing
-
-{- TO BE WRITTEN -}
+	where ack (s0:sr) (x:xs)
+		| s0 /= x = x:(ack (s0:sr) xs)
+		| otherwise = []
 
 
 -- Test cases --------------------
