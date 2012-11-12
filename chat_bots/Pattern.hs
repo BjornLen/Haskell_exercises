@@ -22,19 +22,23 @@ match w [] (s:ss) = Nothing
 match w (t:ts) [] = Nothing
 match w (t:ts) (s:ss)
 	| t == s = match w ts ss
---	| t == w = orElse (singleWildcardMatch t:ts s:ss) ( longerWildcardMatch t:ts s:ss)
-	| t == w =(singleWildcardMatch t:ts s:ss) 
+	| t == w = orElse (singleWildcardMatch (t:ts) (s:ss)) ( longerWildcardMatch (t:ts) (s:ss))
 	| otherwise = Nothing
 
 -- Helper function to match
-singleWildcardMatch, longerWildcardMatch :: Eq a => [a] -> [a] -> Maybe [a]
+singleWildcardMatch :: Eq a => [a] -> [a] -> Maybe [a]
 singleWildcardMatch (wc:ps) (x:xs)
 	| match wc ps xs /= Nothing = Just [x]
+	| otherwise = Nothing 
+
+ack (s0:sr) (x:xs)
+	| s0 /= x = x:(ack (s0:sr) xs)
+	| otherwise = []
+
+longerWildcardMatch :: Eq a => [a] -> [a] -> Maybe [a]
+longerWildcardMatch (wc:ps) (x:xs) 
+	| match wc (wc:ps) xs /= Nothing = Just (ack ps (x:xs)) 
 	| otherwise = Nothing
-
-longerWildcardMatch (wc:ps) (x:xs) = Nothing
-{- TO BE WRITTEN -}
-
 
 
 -- Test cases --------------------
