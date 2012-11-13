@@ -34,13 +34,7 @@ singleWildcardMatch (wc:ps) (x:xs)
 	| otherwise = Nothing 
 
 longerWildcardMatch :: Eq a => [a] -> [a] -> Maybe [a]
-longerWildcardMatch (wc:ps) (x:xs) 
-	| match wc (wc:ps) xs /= Nothing = Just (ack ps (x:xs)) 
-	| otherwise = Nothing
-	where ack (s0:sr) (x:xs)
-		| s0 /= x = x:(ack (s0:sr) xs)
-		| otherwise = []
-
+longerWildcardMatch (wc:ps) (x:xs) = mmap ((:) x) (match wc (wc:ps) xs)
 
 -- Test cases --------------------
 
