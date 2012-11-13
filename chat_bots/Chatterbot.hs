@@ -1,8 +1,8 @@
 module Chatterbot where
 import Utilities
 import Pattern
-import Random
-import Char
+import System.Random
+import Data.Char
 
 
 
@@ -28,19 +28,18 @@ type PhrasePair = (Phrase, Phrase)
 type BotBrain = [(Phrase, [Phrase])]
 
 
+
 --------------------------------------------------------
 
 stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
-{- TO BE WRITTEN -}
-stateOfMind _ = return id
-
+stateOfMind brain = do
+	u <- randomIO ::IO Float
+	return (rulesApply [(statement, pick u phrases)  | (statement, phrases) <- brain ])
 rulesApply :: [PhrasePair] -> Phrase -> Phrase
-{- TO BE WRITTEN -}
-rulesApply _ = id
+rulesApply pairs q = try (transformationsApply "*" reflect pairs) q
 
 reflect :: Phrase -> Phrase
-{- TO BE WRITTEN -}
-reflect = id
+reflect phrase = [try (transformationsApply '*' id reflections ) x | x <- phrase]
 
 reflections =
   [ ("am",     "are"),
@@ -74,8 +73,7 @@ prepare :: String -> Phrase
 prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|")
 
 rulesCompile :: [(String, [String])] -> BotBrain
-{- TO BE WRITTEN -}
-rulesCompile _ = []
+rulesCompile tuple  = [(words (map toLower statement), map words responses) | (statement, responses)<- tuple ]
 
 
 --------------------------------------
