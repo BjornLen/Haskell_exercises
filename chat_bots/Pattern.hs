@@ -12,7 +12,6 @@ substitute w t s = concat [replace w x s | x <- t]
 	where replace wild sub val
 		| sub == wild = val
 		| otherwise = [sub]
--- TODO add empty list cases
 
 -- Tries to match two lists. If they match, the result consists of the sublist
 -- bound to the wildcard in the pattern list.
@@ -65,5 +64,3 @@ transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Mayb
 transformationsApply w f [] ptrn = Nothing
 transformationsApply w f (x:xs) ptrn = orElse (transformationApply w f ptrn x) (transformationsApply w f xs ptrn) 
 
---transformationsApply _ _ _ _ = Nothing
-{- TO BE WRITTEN -}
