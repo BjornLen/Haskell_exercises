@@ -9,7 +9,7 @@ import Utilities
 
 -- Replaces a wildcard in a list with the list given as the third argument
 substitute :: Eq a => a -> [a] -> [a] -> [a]
-substitute w t s =concatMap (\x -> (replace w s x)) t
+substitute w t s =concatMap (replace w s) t
 	where replace wild val sub 
 		| sub == wild = val
 		| otherwise = [sub]
