@@ -40,7 +40,7 @@ rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply pairs q = try (transformationsApply "*" reflect pairs) q
 
 reflect :: Phrase -> Phrase
-reflect phrase = map (try (transformationsApply '*' id reflections ) ) phrase
+reflect phrase = (map.try) (transformationsApply '*' id reflections) phrase
 
 reflections =
   [ ("am",     "are"),
@@ -101,4 +101,5 @@ reduce = reductionsApply reductions
 reductionsApply :: [PhrasePair] -> Phrase -> Phrase
 reductionsApply reductionPairs statement = fix (try (transformationsApply "*" id reductionPairs)) statement
 --reductionsApply reductionPairs statement = fix (try.transformationsApply "*" id reductionPairs) statement
+
 
