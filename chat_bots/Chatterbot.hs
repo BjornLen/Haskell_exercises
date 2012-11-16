@@ -34,12 +34,13 @@ type BotBrain = [(Phrase, [Phrase])]
 stateOfMind :: BotBrain -> IO (Phrase -> Phrase)
 stateOfMind brain = do
 	u <- randomIO ::IO Float
-	return (rulesApply [(statement, pick u phrases)  | (statement, phrases) <- brain ])
+	return ( rulesApply ((map.map2) (id, pick u) brain))
+
 rulesApply :: [PhrasePair] -> Phrase -> Phrase
 rulesApply pairs q = try (transformationsApply "*" reflect pairs) q
 
 reflect :: Phrase -> Phrase
-reflect phrase = [try (transformationsApply '*' id reflections ) x | x <- phrase]
+reflect phrase = map (try (transformationsApply '*' id reflections ) ) phrase
 
 reflections =
   [ ("am",     "are"),
@@ -73,7 +74,7 @@ prepare :: String -> Phrase
 prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|")
 
 rulesCompile :: [(String, [String])] -> BotBrain
-rulesCompile tuple  = [(words (map toLower statement), map words responses) | (statement, responses)<- tuple ]
+rulesCompile tuple  =  (map.map2) (words.map toLower, map words)  tuple
 
 
 --------------------------------------
@@ -99,4 +100,5 @@ reduce = reductionsApply reductions
 
 reductionsApply :: [PhrasePair] -> Phrase -> Phrase
 reductionsApply reductionPairs statement = fix (try (transformationsApply "*" id reductionPairs)) statement
+--reductionsApply reductionPairs statement = fix (try.transformationsApply "*" id reductionPairs) statement
 
