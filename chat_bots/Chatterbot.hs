@@ -99,6 +99,6 @@ reduce :: Phrase -> Phrase
 reduce = reductionsApply reductions
 
 reductionsApply :: [PhrasePair] -> Phrase -> Phrase
-reductionsApply reductionPairs statement = fix (try (transformationsApply "*" id reductionPairs)) statement
---reductionsApply reductionPairs statement = fix (try.transformationsApply "*" id reductionPairs) statement
+--reductionsApply reductionPairs statement = fix (try (transformationsApply "*" id reductionPairs)) statement
+reductionsApply reductionPairs statement = (fix.try)  (transformationsApply "*" id reductionPairs) statement
 
