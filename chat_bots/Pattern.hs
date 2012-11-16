@@ -63,5 +63,5 @@ transformationApply w f ptrn (p1,p2) =
 -- Applying a list of patterns until one succeeds
 transformationsApply :: Eq a => a -> ([a] -> [a]) -> [([a], [a])] -> [a] -> Maybe [a]
 transformationsApply w f [] ptrn = Nothing
-transformationsApply w f (x:xs) ptrn = orElse (transformationApply w f ptrn x) (transformationsApply w f xs ptrn) 
-
+--transformationsApply w f (x:xs) ptrn = orElse (transformationApply w f ptrn x) (transformationsApply w f xs ptrn) 
+transformationsApply w f x ptrn = foldr (orElse.(transformationApply w f ptrn )) Nothing  x 

@@ -20,14 +20,11 @@ chatterbot botName botRules = do
       putStrLn (botName ++ ": " ++ (present . answer . prepare) question)
 
       if (not.endOfDialog) question then botloop else return ()
-
 --------------------------------------------------------
 
 type Phrase = [String]
 type PhrasePair = (Phrase, Phrase)
 type BotBrain = [(Phrase, [Phrase])]
-
-
 
 --------------------------------------------------------
 
@@ -76,9 +73,7 @@ prepare = reduce . words . map toLower . filter (not . flip elem ".,:;*!#%&|")
 rulesCompile :: [(String, [String])] -> BotBrain
 rulesCompile tuple  =  (map.map2) (words.map toLower, map words)  tuple
 
-
 --------------------------------------
-
 
 reductions :: [PhrasePair]
 reductions = (map.map2) (words, words)
