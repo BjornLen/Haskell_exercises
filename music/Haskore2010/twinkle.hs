@@ -33,5 +33,9 @@ p33 = lmap (fd qn) [f oct, f oct, e oct, e oct, d oct, d oct]
 p34 = lmap (fd hn) [c oct]
 l3 = p31 :+: p32 :+: p33 :+: p34
 
-twinkle = ( Instr "sax" (Tempo 7 (l1:+:l2:+:l3)) ) :+: (Instr "piano" (Tempo 7 (l1:+:l2:+:l3)) )
+twinkle = ( Instr "sax" (Tempo 2 (l1:+:l2:+:l3)) ) :+: (Instr "piano" (Tempo 2 (l1:+:l2:+:l3)) )
 
+
+twinkleChords = [[C],[F,C],[G,C],[G,C],
+	[C,G],[C,G],[C,G],[C,G],
+	[C],[F,C],[G,C],G,C]]
