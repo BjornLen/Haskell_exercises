@@ -13,10 +13,10 @@ Music:
 > silence = -1
 
 > basic, calypso, boogie :: BassStyle
-> basic = [(1,hn),(5,hn)]
-> calypso = [(silence,qn),(1,en),(3,en),(silence,qn),(1,en),(3,en)]
-> boogie = [(1,en),(5,en),(6,en),(5,en),
->	(1,en),(5,en),(6,en),(5,en)]
+> basic = [(0,hn),(4,hn)]
+> calypso = [(silence,qn),(0,en),(2,en),(silence,qn),(0,en),(2,en)]
+> boogie = [(0,en),(4,en),(5,en),(4,en),
+>	(0,en),(4,en),(5,en),(4,en)]
 
 
 > autoBass :: BassStyle -> Key -> ChordProgression -> Music
