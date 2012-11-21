@@ -57,11 +57,43 @@ Chords belong to chord class. Chords class similar to key: root, harmonic, chord
 TODO: Define keys and how to pick not supply from keys. How to 
 
 
+\section{Scale Patterns}
+================================================================================
 
 
+> type HarmonicQuality = Int;
 
+> major, minor :: HarmonicQuality
+> major = 1
+> minor = -1
 
+> type ScalePattern = [Int]
 
+> ionian, lydian, mixolydian, aeolian, dorian, phrygian :: ScalePattern
+> ionian	= [0, 2, 4, 5, 7 ,9, 11]
+> lydian	= [0, 2, 4, 6, 7, 9 ,11]
+> mixolydian	= [0, 2, 4, 5, 7, 9, 10]
+> aeolian	= [0, 2, 3, 5, 7, 8, 10]
+> dorian	= [0, 2, 3, 5 ,7, 9, 10]
+> phrygian	= [0, 1, 3, 5, 7, 8, 10]
+
+> chooseScalePattern :: HarmonicQuality -> Int -> ScalePattern
+> chooseScalepattern quality
+>	| quality == major = chooseScalePatternMajor
+>	| quality == minor = chooseScalePatternMinor
+
+> -- Helper functions for chooseScalePattern
+> chooseScalePatternMajor pos
+>	| pos == 0 = ionian
+>	| pos == 1 = mixolydian
+>	| pos == 3 = lydian
+>	| pos == 4 = mixolydian
+>	| pos == 5 = aeolian
+> chooseScalePatternMinor pos
+>	| pos == 1 = dorian
+>	| pos == 2 = phrygian
+
+\section{Bass Lines}
 
 > type BassStyle = [(Int,Dur)]
 

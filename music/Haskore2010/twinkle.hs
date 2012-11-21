@@ -27,8 +27,5 @@ l2 = p21 :+: p22 :+: p21 :+: p22
 -- Line 3 in twinkle
 l3 = l1
 
-twinkle = ( Instr "piano" (Tempo 3 (l1:+:l2:+:l3)) ) :=: (Instr "Acoustic Bass" (Tempo 3 (l1:+:l2:+:l3)) )
-
-twinkleChords = [[C],[F,C],[G,C],[G,C],
-	[C,G],[C,G],[C,G],[C,G],
-	[C],[F,C],[G,C],G,C]]
+--twinkle = ( Instr "piano" (Tempo 3 (l1:+:l2:+:l3)) ) :=: (Instr "Acoustic Bass" (Tempo 3 (l1:+:l2:+:l3)) )
+twinkle = Instr "piano" (Tempo 3 (l1:=:l2:+:l3))
