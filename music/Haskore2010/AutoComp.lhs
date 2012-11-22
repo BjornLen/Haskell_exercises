@@ -44,7 +44,10 @@ represented on a piano is typically the seventh.
 
 TODO: Add: Note need a duration. Pitchclasses. 
 
-TODO: In this section define (in code) stuff like notes, octaves etc (if we need them). I'm guessing that we need to represent notes as positions on in a sheet, from 0 and up. And given these positions and the note supply, below, we determine what pitchclass and octave that we assign the notes. 
+TODO: In this section define (in code) stuff like notes, octaves etc (if we need
+them). I'm guessing that we need to represent notes as positions on in a sheet, 
+from 0 and up. And given these positions and the note supply, below, we determine 
+what pitchclass and octave that we assign the notes. 
 
 
 \section{Keys and chords}
@@ -52,20 +55,32 @@ What is a key? Root + harmonic (C Major).
 Harmonic gives pattern - how to pick a note scale from the octave.
 Different patterns
 
-Chords belong to chord class. Chords class similar to key: root, harmonic, chord pattern (used to build chord, e.g. basic triad), chord scale - given by a function applied on the key of the song and the choords root and pattern tabular. 
+Chords belong to chord class. Chords class similar to key: root, harmonic, chord 
+pattern (used to build chord, e.g. basic triad), chord scale - given by a 
+function applied on the key of the song and the choords root and pattern 
+tabular. 
 
 TODO: Define keys and how to pick not supply from keys. How to 
 
 
+================================================================================
+
+This is the definition of a ChordProgression
+
+> type ChordProgression = [(PitchClass,Dur)]
+
 \section{Scale Patterns}
 ================================================================================
 
+Definierar två variabler major o minor för harmonic quality för enkelhet
 
 > type HarmonicQuality = Int;
 
 > major, minor :: HarmonicQuality
 > major = 1
 > minor = -1
+
+En listning av olika scalepatterns
 
 > type ScalePattern = [Int]
 
@@ -77,8 +92,11 @@ TODO: Define keys and how to pick not supply from keys. How to
 > dorian	= [0, 2, 3, 5 ,7, 9, 10]
 > phrygian	= [0, 1, 3, 5, 7, 8, 10]
 
+Väljer att scalepattern baserat på om man har major eller minor och vilken
+position den aktuella noten har i grundskalan (typ C major)
+
 > chooseScalePattern :: HarmonicQuality -> Int -> ScalePattern
-> chooseScalepattern quality
+> chooseScalePattern quality
 >	| quality == major = chooseScalePatternMajor
 >	| quality == minor = chooseScalePatternMinor
 
@@ -93,7 +111,30 @@ TODO: Define keys and how to pick not supply from keys. How to
 >	| pos == 1 = dorian
 >	| pos == 2 = phrygian
 
+Skapar en notskala baserat på pitklassen (typ C eller D) och i vilken oktav
+man vill att skalan ska börja i. Tänkte att man väljer 3 där för bass line.
+Sen får man en lista med ABsPitches.
+
+> noteSupply :: PitchClass -> Octave -> HarmonicQuality -> [AbsPitch]
+> noteSupply pclass oct quality 
+>	| quality == major = map ((+) (absPitch (pclass,oct))) ionian			-- <-- use .
+>	| quality == minor = map ((+) (absPitch (pclass,oct))) aeolian			-- <-- use .
+
+Tar reda på positionen för en specifik pitch i en given grundskala.
+
+> notePosition :: [AbsPitch] -> Pitch -> Int
+> notePosition scale pitch = 								-- DÅLIG OCH FUL KOD
+>	[index | (index, e) <- zip [0..] scale, e == absPitch pitch ] !! 0
+
 \section{Bass Lines}
+
+Some properties for the bass line.
+
+> bassVol = [Volume 80]
+> instrum = "Acoustic Bass"
+> bassOct = 3 -- the base octave in the bass line
+
+De olika bass stylesen definierade.
 
 > type BassStyle = [(Int,Dur)]
 
@@ -106,7 +147,32 @@ TODO: Define keys and how to pick not supply from keys. How to
 >	(0,en),(4,en),(5,en),(4,en)]
 
 
-> autoBass :: BassStyle -> Key -> ChordProgression -> Music
-> autoBass _ _ _ = id
+Nedanstående kod är under utveckling. 
 
-> type ChordProgression = [[Chord]]
+> autoBass :: BassStyle -> (PitchClass, HarmonicQuality) -> ChordProgression -> Music
+> autoBass style (pclass,quality) cprog = 
+>	toMusic (bassLine style (noteSupply pclass bassOct quality) cprog)
+
+> bassLine :: BassStyle -> [AbsPitch] -> ChordProgression -> [(AbsPitch,Dur)]
+> bassLine _ _ [] = []
+> bassLine _ _ _ = [((absPitch (C,3)),wn),((absPitch (D,4)),wn)]
+
+> toMusic :: [(AbsPitch,Dur)] -> Music
+> toMusic pitches =
+>	foldr1 (:+:) (map toNote pitches)
+>	where toNote (p,dur) =
+>		Note (pitch p) dur bassVol
+
+
+
+
+
+
+
+
+
+
+
+
+
+
