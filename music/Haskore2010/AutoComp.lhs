@@ -92,7 +92,7 @@ En listning av olika scalepatterns
 > dorian	= [0, 2, 3, 5 ,7, 9, 10]
 > phrygian	= [0, 1, 3, 5, 7, 8, 10]
 
-Väljer att scalepattern baserat på om man har major eller minor och vilken
+Väljer ett scalepattern baserat på om man har major eller minor och vilken
 position den aktuella noten har i grundskalan (typ C major)
 
 > chooseScalePattern :: HarmonicQuality -> Int -> ScalePattern
@@ -130,8 +130,7 @@ Tar reda på positionen för en specifik pitch i en given grundskala.
 
 Some properties for the bass line.
 
-> bassVol = [Volume 80]
-> instrum = "Acoustic Bass"
+> bassVol = [Volume 60]
 > bassOct = 3 -- the base octave in the bass line
 
 De olika bass stylesen definierade.
@@ -147,21 +146,38 @@ De olika bass stylesen definierade.
 >	(0,en),(4,en),(5,en),(4,en)]
 
 
+================================================================================
+
 Nedanstående kod är under utveckling. 
 
 > autoBass :: BassStyle -> (PitchClass, HarmonicQuality) -> ChordProgression -> Music
 > autoBass style (pclass,quality) cprog = 
->	toMusic (bassLine style (noteSupply pclass bassOct quality) cprog)
+>	toMusic (bassLine (cycle style) quality (noteSupply pclass bassOct quality) cprog)
 
-> bassLine :: BassStyle -> [AbsPitch] -> ChordProgression -> [(AbsPitch,Dur)]
-> bassLine _ _ [] = []
-> bassLine _ _ _ = [((absPitch (C,3)),wn),((absPitch (D,4)),wn)]
+> bassLine :: BassStyle -> HarmonicQuality -> [AbsPitch] -> ChordProgression -> [(AbsPitch,Dur)]
+> bassLine _ _ _ [] = []
+ 
+ > bassLine _ _ _ = [((absPitch (C,3)),wn),(-1,wn),((absPitch (D,4)),wn)]
+
+> bassLine ((st,sdur):sts) quality noteSupp ((ch,cdur):chs)
+>	| sdur == 0 = bassLine sts quality noteSupp ((ch,cdur):chs)
+>	| cdur == 0 = bassLine ((st,sdur):sts) quality noteSupp chs
+>	| otherwise = play st dur : 
+>		bassLine ((st,sdur-dur):sts) quality noteSupp ((ch,cdur-dur):chs)
+>	where 
+>		dur = min sdur cdur
+>		play st dur
+>			| st == -1 = (-1,dur)
+>			| otherwise =
+>				(map ((+) (absPitch (ch,bassOct)))((chooseScalePattern quality (notePosition noteSupp (ch,bassOct)))) !! 
+>					st,dur)
 
 > toMusic :: [(AbsPitch,Dur)] -> Music
 > toMusic pitches =
 >	foldr1 (:+:) (map toNote pitches)
->	where toNote (p,dur) =
->		Note (pitch p) dur bassVol
+>	where toNote (p,dur)
+>		| p == silence	= Rest dur
+>		| otherwise	= Note (pitch p) dur bassVol
 
 
 

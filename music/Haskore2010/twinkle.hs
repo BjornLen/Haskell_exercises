@@ -38,18 +38,6 @@ twinkleChords = [(C,wn),(F,hn),(C,hn),(G,hn),(C,hn),(G,hn),(C,hn),
 	(C,hn),(G,hn),(C,hn),(G,hn),(C,hn),(G,hn),(C,hn),(G,hn),
 	(C,wn),(F,hn),(C,hn),(G,hn),(C,hn),(G,hn),(C,hn)]
 
-bbc = lmap (fd en) [c 3, g 3, a 3, g 3]
-bbf = lmap (fd en) [f 3, c 4, d 4, c 4]
-bbg = lmap (fd en) [g 3, d 4, e 4, d 4]
+twinkleBass = autoBass basic (C, major) twinkleChords
 
--- Bassline boogie bass twinkle, one var for each line
-bl1 = foldr1 (:+:) [bbc, bbc, bbf, bbc, bbg, bbc, bbg, bbc]
-bl2 = foldr1 (:+:) [bbc, bbg, bbc, bbg, bbc, bbg, bbc, bbg]
-
-twinkleBass = autoBass boogie (C, major) twinkleChords
-
-twinkle = Tempo 2 ((Instr "piano" twinkleMelody) :=: (Instr "Acoustic Bass" (bl1:+:bl2:+:bl1)))
-
-cMajor = foldr1 (:=:) [ Note (x, 4) hn [Volume 80] | x <-[C, E, G] ]
-
-testBajs = Tempo 3 (cMajor :+: Rest wn :+: (Note (C, 4) hn [Volume 80]))
+twinkle = Tempo 3 ((Instr "piano" twinkleMelody) :=: (Instr "Acoustic Bass" twinkleBass))
