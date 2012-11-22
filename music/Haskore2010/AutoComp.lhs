@@ -150,15 +150,16 @@ De olika bass stylesen definierade.
 
 Nedanstående kod är under utveckling. 
 
+Den anropar bassLine som flätar ihop style och chordprogression och tillverkar grundskalan.
+
 > autoBass :: BassStyle -> (PitchClass, HarmonicQuality) -> ChordProgression -> Music
 > autoBass style (pclass,quality) cprog = 
 >	toMusic (bassLine (cycle style) quality (noteSupply pclass bassOct quality) cprog)
 
+Flätar ihop bass style och chordprogression en duration i taget (lite influense av åkessons variant)
+
 > bassLine :: BassStyle -> HarmonicQuality -> [AbsPitch] -> ChordProgression -> [(AbsPitch,Dur)]
 > bassLine _ _ _ [] = []
- 
- > bassLine _ _ _ = [((absPitch (C,3)),wn),(-1,wn),((absPitch (D,4)),wn)]
-
 > bassLine ((st,sdur):sts) quality noteSupp ((ch,cdur):chs)
 >	| sdur == 0 = bassLine sts quality noteSupp ((ch,cdur):chs)
 >	| cdur == 0 = bassLine ((st,sdur):sts) quality noteSupp chs
@@ -171,6 +172,9 @@ Nedanstående kod är under utveckling.
 >			| otherwise =
 >				(map ((+) (absPitch (ch,bassOct)))((chooseScalePattern quality (notePosition noteSupp (ch,bassOct)))) !! 
 >					st,dur)
+
+bassLine genererar en lista med absolut pitchar och durations som görs till noter här.
+Om vi vill göra ackord istället för enskilda noter bör det gå att göra här.
 
 > toMusic :: [(AbsPitch,Dur)] -> Music
 > toMusic pitches =
