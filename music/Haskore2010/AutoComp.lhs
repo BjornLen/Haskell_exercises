@@ -4,7 +4,7 @@ TODO: set up as latex document.
 ================================================================================
 
 > module AutoComp where
-> import Haskore
+> import Haskore hiding(Major,Minor)
 
 \section{Introduction}
 
@@ -74,11 +74,10 @@ This is the definition of a ChordProgression
 
 Definierar två variabler major o minor för harmonic quality för enkelhet
 
-> type HarmonicQuality = Int;
+> data HarmonicQuality = Major | Minor
+>	deriving (Eq)
 
-> major, minor :: HarmonicQuality
-> major = 1
-> minor = -1
+================================================================================
 
 En listning av olika scalepatterns
 
@@ -97,40 +96,43 @@ position den aktuella noten har i grundskalan (typ C major)
 
 > chooseScalePattern :: HarmonicQuality -> Int -> ScalePattern
 > chooseScalePattern quality
->	| quality == major = chooseScalePatternMajor
->	| quality == minor = chooseScalePatternMinor
-
-> -- Helper functions for chooseScalePattern
-> chooseScalePatternMajor pos
->	| pos == 0 = ionian
->	| pos == 1 = mixolydian
->	| pos == 3 = lydian
->	| pos == 4 = mixolydian
->	| pos == 5 = aeolian
-> chooseScalePatternMinor pos
->	| pos == 1 = dorian
->	| pos == 2 = phrygian
+>	| quality == Major = chooseScalePatternMajor
+>	| quality == Minor = chooseScalePatternMinor
+>	where
+>		chooseScalePatternMajor pos
+>			| pos == 0 = ionian
+>			| pos == 1 = mixolydian
+>			| pos == 3 = lydian
+>			| pos == 4 = mixolydian
+>			| pos == 5 = aeolian
+> 		chooseScalePatternMinor pos
+>			| pos == 1 = dorian
+>			| pos == 2 = phrygian
 
 Skapar en notskala baserat på pitklassen (typ C eller D) och i vilken oktav
 man vill att skalan ska börja i. Tänkte att man väljer 3 där för bass line.
 Sen får man en lista med ABsPitches.
 
-> noteSupply :: PitchClass -> Octave -> HarmonicQuality -> [AbsPitch]
-> noteSupply pclass oct quality 
->	| quality == major = map ((+) (absPitch (pclass,oct))) ionian			-- <-- use .
->	| quality == minor = map ((+) (absPitch (pclass,oct))) aeolian			-- <-- use .
+================================================================================
+
+> noteSupply :: Pitch -> HarmonicQuality -> [AbsPitch]
+> noteSupply pitch quality 
+>	| quality == Major = map ((+) (absPitch pitch)) ionian
+>	| quality == Minor = map ((+) (absPitch pitch)) aeolian
 
 Tar reda på positionen för en specifik pitch i en given grundskala.
 
-> notePosition :: [AbsPitch] -> Pitch -> Int
-> notePosition scale pitch = 								-- DÅLIG OCH FUL KOD
->	[index | (index, e) <- zip [0..] scale, e == absPitch pitch ] !! 0
+> notePosition :: [AbsPitch] -> PitchClass -> Int
+> notePosition scale pitchClass = 
+>	[index | (index, e) <- zip [0..] scale, mod e 12 == absPitch (pitchClass,0) ] !! 0
+
+================================================================================
 
 \section{Bass Lines}
 
 Some properties for the bass line.
 
-> bassVol = [Volume 60]
+> bassVol = [Volume 80]
 > bassOct = 3 -- the base octave in the bass line
 
 De olika bass stylesen definierade.
@@ -148,13 +150,11 @@ De olika bass stylesen definierade.
 
 ================================================================================
 
-Nedanstående kod är under utveckling. 
-
 Den anropar bassLine som flätar ihop style och chordprogression och tillverkar grundskalan.
 
-> autoBass :: BassStyle -> (PitchClass, HarmonicQuality) -> ChordProgression -> Music
-> autoBass style (pclass,quality) cprog = 
->	toMusic (bassLine (cycle style) quality (noteSupply pclass bassOct quality) cprog)
+> autoBass :: BassStyle -> (PitchClass,HarmonicQuality) -> ChordProgression -> Music
+> autoBass style (pclass,quality) prog = 
+>	toMusic (bassLine (cycle style) quality (noteSupply (pclass,bassOct) quality) prog)
 
 Flätar ihop bass style och chordprogression en duration i taget (lite influense av åkessons variant)
 
@@ -168,9 +168,9 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 >	where 
 >		dur = min sdur cdur
 >		play st dur
->			| st == -1 = (-1,dur)
+>			| st == -1 = (silence,dur)
 >			| otherwise =
->				(map ((+) (absPitch (ch,bassOct)))((chooseScalePattern quality (notePosition noteSupp (ch,bassOct)))) !! 
+>				(map ((+) (absPitch (ch,bassOct)))((chooseScalePattern quality (notePosition noteSupp ch))) !! 
 >					st,dur)
 
 bassLine genererar en lista med absolut pitchar och durations som görs till noter här.
@@ -184,9 +184,13 @@ Om vi vill göra ackord istället för enskilda noter bör det gå att göra hä
 >		| otherwise	= Note (pitch p) dur bassVol
 
 
+================================================================================
 
-
-
+> autoComp :: BassStyle -> (PitchClass,HarmonicQuality) -> ChordProgression -> Music
+> autoComp style key chords =
+>	foldr1 (:=:) 
+>		[(Instr "Acoustic Bass" bass)]
+>	where bass = autoBass style key chords
 
 
 
