@@ -121,10 +121,15 @@ Sen får man en lista med ABsPitches.
 >	| quality == Minor = map ((+) (absPitch pitch)) aeolian
 
 Tar reda på positionen för en specifik pitch i en given grundskala.
+N�Nmn problem med att vi f�r ut sista index om den inte �terfinns.
 
 > notePosition :: [AbsPitch] -> PitchClass -> Int
 > notePosition scale pitchClass = 
->	[index | (index, e) <- zip [0..] scale, mod e 12 == absPitch (pitchClass,0) ] !! 0
+>	pos (map (`mod` 12) scale) (absPitch (pitchClass,0)) 0
+>		where   pos [] _ i = i 			
+>			pos (x:xs) xr i 
+>				| x == xr = i
+>				| x /= xr = pos xs xr (i+1)
 
 ================================================================================
 
@@ -170,8 +175,28 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 >		play st dur
 >			| st == -1 = (silence,dur)
 >			| otherwise =
->				(map ((+) (absPitch (ch,bassOct)))((chooseScalePattern quality (notePosition noteSupp ch))) !! 
->					st,dur)
+>				((absPitch (ch,bassOct)) + (chooseScalePattern quality (notePosition noteSupp ch) !! st),dur)
+
+> initial = [(48,wn),(53,wn),(56,wn)] :: [(AbsPitch, Dur)] -- C,E,G in oct 4
+
+
+> minimize :: (PitchClass,Dur) -> [(AbsPitch,Dur)] -> [(AbsPitch,Dur)]
+> minimize cur prev = initial
+
+
+> genChord :: ChordProgression -> [(AbsPitch,Dur)] -> Music
+> genChord [] _ = Rest 0 
+> genChord (ch:chs) [] = (toMusic minimal):=:(genChord chs minimal)
+>	where minimal = minimize ch initial
+> genChord (ch:chs) prev = (toMusic minimal):=:(genChord chs minimal)
+> 	where minimal = minimize ch prev
+
+> autoChord :: Key -> ChordProgression -> Music
+> autoChord key chords = genChord chords []
+
+
+
+
 
 bassLine genererar en lista med absolut pitchar och durations som görs till noter här.
 Om vi vill göra ackord istället för enskilda noter bör det gå att göra här.
@@ -182,6 +207,7 @@ Om vi vill göra ackord istället för enskilda noter bör det gå att göra hä
 >	where toNote (p,dur)
 >		| p == silence	= Rest dur
 >		| otherwise	= Note (pitch p) dur bassVol
+
 
 
 ================================================================================
