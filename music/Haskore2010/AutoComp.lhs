@@ -4,7 +4,7 @@ TODO: set up as latex document.
 ================================================================================
 
 > module AutoComp where
-> import Haskore hiding(Major,Minor)
+> import Haskore hiding(Major,Minor,Key)
 
 \section{Introduction}
 
@@ -95,7 +95,7 @@ Väljer ett scalepattern baserat på om man har major eller minor och vilken
 position den aktuella noten har i grundskalan (typ C major)
 
 > chooseScalePattern :: HarmonicQuality -> Int -> ScalePattern
-> chooseScalePattern quality
+> chooseScalePattern quality 
 >	| quality == Major = chooseScalePatternMajor
 >	| quality == Minor = chooseScalePatternMinor
 >	where
@@ -123,10 +123,9 @@ Sen får man en lista med ABsPitches.
 Tar reda på positionen för en specifik pitch i en given grundskala.
 N�Nmn problem med att vi f�r ut sista index om den inte �terfinns.
 
-> notePosition :: [AbsPitch] -> PitchClass -> Int
-> notePosition scale pitchClass = 
->	pos (map (`mod` 12) scale) (absPitch (pitchClass,0)) 0
->		where   pos [] _ i = i 			
+> notePosition :: [AbsPitch] -> AbsPitch -> Int
+> notePosition scale ab = pos (map (`mod` 12) scale) ab 0
+>		where	pos [] _ i = i 			
 >			pos (x:xs) xr i 
 >				| x == xr = i
 >				| x /= xr = pos xs xr (i+1)
@@ -157,9 +156,10 @@ De olika bass stylesen definierade.
 
 Den anropar bassLine som flätar ihop style och chordprogression och tillverkar grundskalan.
 
-> autoBass :: BassStyle -> (PitchClass,HarmonicQuality) -> ChordProgression -> Music
-> autoBass style (pclass,quality) prog = 
->	toMusic (bassLine (cycle style) quality (noteSupply (pclass,bassOct) quality) prog)
+> autoBass :: BassStyle -> Key -> ChordProgression -> Music
+> autoBass style key prog = 
+>	toMusic (bassLine (cycle style) quality (noteSupply ((fst key),bassOct) quality) prog)
+>		where quality = snd key
 
 Flätar ihop bass style och chordprogression en duration i taget (lite influense av åkessons variant)
 
@@ -174,25 +174,39 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 >		dur = min sdur cdur
 >		play st dur
 >			| st == -1 = (silence,dur)
->			| otherwise =
->				((absPitch (ch,bassOct)) + (chooseScalePattern quality (notePosition noteSupp ch) !! st),dur)
+>			| otherwise = ((absPitch (ch,bassOct)) + ((chooseScalePattern quality pos ) !! st),dur)
+>				where pos = notePosition noteSupp (absPitch (ch,0))
+
+> type Key = (PitchClass,HarmonicQuality)
 
 > initial = [(48,wn),(53,wn),(56,wn)] :: [(AbsPitch, Dur)] -- C,E,G in oct 4
 
+> genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
+> genCandidates key (pclass,dur) = [initial]
+>	where
+>		pattern = chooseScalePattern (snd key) (notePosition [1,2] (absPitch (pclass,0) ))
+>			where
+>				noteSupp = noteSupply (pclass,0) (snd key)
 
-> minimize :: (PitchClass,Dur) -> [(AbsPitch,Dur)] -> [(AbsPitch,Dur)]
-> minimize cur prev = initial
+
+> score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
+> score candidates prev = [1..5]
+
+> minimize :: Key -> (PitchClass,Dur) -> [(AbsPitch,Dur)] -> [(AbsPitch,Dur)]
+> minimize key cur prev = candidates !! (minimum (score candidates prev))
+>	where 	candidates = genCandidates key cur 
+ 		
 
 
-> genChord :: ChordProgression -> [(AbsPitch,Dur)] -> Music
-> genChord [] _ = Rest 0 
-> genChord (ch:chs) [] = (toMusic minimal):=:(genChord chs minimal)
->	where minimal = minimize ch initial
-> genChord (ch:chs) prev = (toMusic minimal):=:(genChord chs minimal)
-> 	where minimal = minimize ch prev
+> genChord :: Key -> ChordProgression -> [(AbsPitch,Dur)] -> Music
+> genChord key [] _ = Rest 0 
+> genChord key (ch:chs) [] = (toMusic minimal):+:(genChord key chs minimal)
+>	where minimal = minimize key ch initial
+> genChord key (ch:chs) prev = (toMusic minimal):+:(genChord key chs minimal)
+> 	where minimal = minimize key ch prev
 
 > autoChord :: Key -> ChordProgression -> Music
-> autoChord key chords = genChord chords []
+> autoChord key chords = genChord key chords []
 
 
 
@@ -204,6 +218,7 @@ Om vi vill göra ackord istället för enskilda noter bör det gå att göra hä
 > toMusic :: [(AbsPitch,Dur)] -> Music
 > toMusic pitches =
 >	foldr1 (:+:) (map toNote pitches)
+
 >	where toNote (p,dur)
 >		| p == silence	= Rest dur
 >		| otherwise	= Note (pitch p) dur bassVol
