@@ -181,12 +181,20 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 
 > initial = [(48,wn),(53,wn),(56,wn)] :: [(AbsPitch, Dur)] -- C,E,G in oct 4
 
+> inversions = [[0,2,4],[2,4,0],[4,0,2]] 
+
+Here we work on the basic semitones, corresponding to the notes in the chord
+
+> genValids :: [AbsPitch] -> [[AbsPitch]]
+> genValids triad = [triad]
+
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
-> genCandidates key (pclass,dur) = [initial]
->	where
->		pattern = chooseScalePattern (snd key) (notePosition [1,2] (absPitch (pclass,0) ))
->			where
->				noteSupp = noteSupply (pclass,0) (snd key)
+> genCandidates key (pclass,dur) =  [initial]--[genValids (map (pattern !!) inv| inv <- inversions]
+
+	>	where
+	>		pattern = map ((+) (absPitch ((fst key),0) )) chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) ))
+	>			where
+	>				noteSupp = noteSupply (pclass,0) (snd key)
 
 
 > score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
