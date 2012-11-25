@@ -125,10 +125,12 @@ N�Nmn problem med att vi f�r ut sista index om den inte �terfinns.
 
 > notePosition :: [AbsPitch] -> AbsPitch -> Int
 > notePosition scale ab = pos (map (`mod` 12) scale) ab 0
->		where	pos [] _ i = i 			
->			pos (x:xs) xr i 
->				| x == xr = i
->				| x /= xr = pos xs xr (i+1)
+
+> pos :: Eq a => [a] -> a -> Int -> Int
+> pos [] _ i = i 			
+> pos (x:xs) xr i 
+>	| x == xr = i
+>	| x /= xr = pos xs xr (i+1)
 
 ================================================================================
 
@@ -136,7 +138,7 @@ N�Nmn problem med att vi f�r ut sista index om den inte �terfinns.
 
 Some properties for the bass line.
 
-> bassVol = [Volume 80]
+> bassVol = [Volume 60]
 > bassOct = 3 -- the base octave in the bass line
 
 De olika bass stylesen definierade.
@@ -158,7 +160,7 @@ Den anropar bassLine som flätar ihop style och chordprogression och tillverkar 
 
 > autoBass :: BassStyle -> Key -> ChordProgression -> Music
 > autoBass style key prog = 
->	toMusic (bassLine (cycle style) quality (noteSupply ((fst key),bassOct) quality) prog)
+>	toMusic (bassLine (cycle style) quality (noteSupply ((fst key),bassOct) quality) prog) bassVol
 >		where quality = snd key
 
 Flätar ihop bass style och chordprogression en duration i taget (lite influense av åkessons variant)
@@ -181,7 +183,9 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 
 > initial = [(55,wn),(59,wn),(67,wn)] :: [(AbsPitch, Dur)] 
 
-> inversions = [[0,2,4],[0,4,2],[2,0,4],[2,4,0],[4,0,2],[4,2,0]]
+> chordVol = [Volume 35]
+
+> inversions = [[0,2,4],[2,4,0],[4,0,2]] --,[2,4,0],[4,0,2],[4,2,0]]
 
 
 Here we work on the basic semitones, corresponding to the notes in the chord
@@ -194,7 +198,8 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 >			where o45 = [48,60]
 
 > genValidsWithDur :: [[[AbsPitch]]] -> Dur -> [[(AbsPitch,Dur)]]
-> genValidsWithDur pts d = [zip pt [d] | pt <-(concat pts)]
+> genValidsWithDur pts d = [zip pt durs | pt <-(concat pts)]
+> 	where durs = [d,d,d]
 
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
 > genCandidates key (pclass,dur) =  genValidsWithDur [genValids (map (`mod`12) (map (pattern !!) inv))| inv <- inversions] dur
@@ -205,22 +210,22 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 
 
 > score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
-> score candidates prev = zipWith (+) (in_d cur) (map (2*) (ex_d cur (map (fst) prev)))
+> score candidates prev = zipWith (+) (in_d cur) (map (1*) (ex_d cur (map (fst) prev)))
 >	where 	in_d pts  = [(maximum pt) - (minimum pt) |pt <- pts ]
 >		cur = map (map (fst)) candidates
 >		ex_d pts pre = [sum (map abs (zipWith (-) pt pre) ) | pt<-pts ]
 
 > minimize :: Key -> (PitchClass,Dur) -> [(AbsPitch,Dur)] -> [(AbsPitch,Dur)]
-> minimize key cur prev = candidates !! (minimum (score candidates prev))
+> minimize key cur prev = candidates !! (pos (score candidates prev) (minimum (score candidates prev)) 0)
 >	where 	candidates = genCandidates key cur 
  		
 
 
 > genChord :: Key -> ChordProgression -> [(AbsPitch,Dur)] -> Music
 > genChord key [] _ = Rest 0 
-> genChord key (ch:chs) [] = (toMusic minimal):+:(genChord key chs minimal)
+> genChord key (ch:chs) [] = (toMusic2 minimal chordVol):+:(genChord key chs minimal)
 >	where minimal = minimize key ch initial
-> genChord key (ch:chs) prev = (toMusic minimal):+:(genChord key chs minimal)
+> genChord key (ch:chs) prev = (toMusic2 minimal chordVol):+:(genChord key chs minimal)
 > 	where minimal = minimize key ch prev
 
 > autoChord :: Key -> ChordProgression -> Music
@@ -233,21 +238,25 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 bassLine genererar en lista med absolut pitchar och durations som görs till noter här.
 Om vi vill göra ackord istället för enskilda noter bör det gå att göra här.
 
-> toMusic :: [(AbsPitch,Dur)] -> Music
-> toMusic pitches =
+> toMusic :: [(AbsPitch,Dur)] -> [NoteAttribute] -> Music
+> toMusic pitches vol =
 >	foldr1 (:+:) (map toNote pitches)
-
 >	where toNote (p,dur)
 >		| p == silence	= Rest dur
->		| otherwise	= Note (pitch p) dur bassVol
+>		| otherwise	= Note (pitch p) dur vol
 
-
+> toMusic2 :: [(AbsPitch,Dur)] -> [NoteAttribute] -> Music
+> toMusic2 pitches vol =
+>	foldr1 (:=:) (map toNote pitches)
+>	where toNote (p,dur)
+>		| p == silence	= Rest dur
+>		| otherwise	= Note (pitch p) dur vol
 
 ================================================================================
 
 > autoComp :: BassStyle -> Key -> ChordProgression -> Music
 > autoComp style key chords =
->	(Instr "Acoustic Bass" bass) :=: (Instr "flute" chord_v)
+>	(Instr "Acoustic Bass" bass) :=: (Instr "Church Organ" chord_v)
 >	where 	bass = autoBass style key chords
 >		chord_v = autoChord key chords
 
