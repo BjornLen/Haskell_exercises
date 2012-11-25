@@ -179,7 +179,7 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 
 > type Key = (PitchClass,HarmonicQuality)
 
-> initial = [(48,wn),(52,wn),(55,wn)] :: [(AbsPitch, Dur)] -- C,E,G in oct 4
+> initial = [(55,wn),(59,wn),(67,wn)] :: [(AbsPitch, Dur)] 
 
 > inversions = [[0,2,4],[2,4,0],[4,0,2]] 
 
@@ -196,7 +196,7 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 > genValidsWithDur pts d = [zip pt [d] | pt <-(concat pts)]
 
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
-> genCandidates key (pclass,dur) =  genValidsWithDur [genValids (map (pattern !!) inv)| inv <- inversions] dur
+> genCandidates key (pclass,dur) =  genValidsWithDur [genValids (map (`mod`12) (map (pattern !!) inv))| inv <- inversions] dur
 >	where
 >		pattern = map ((+) (absPitch (pclass,0) )) (chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) )))
 >			where
@@ -204,7 +204,7 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 
 
 > score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
-> score candidates prev = zipWith (+) (in_d cur) (ex_d cur (map (fst) prev))
+> score candidates prev = zipWith (+) (in_d cur) (map (2*) (ex_d cur (map (fst) prev)))
 >	where 	in_d pts  = [(maximum pt) - (minimum pt) |pt <- pts ]
 >		cur = map (map (fst)) candidates
 >		ex_d pts pre = [sum (map abs (zipWith (-) pt pre) ) | pt<-pts ]
