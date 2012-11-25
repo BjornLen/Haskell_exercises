@@ -186,10 +186,13 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 Here we work on the basic semitones, corresponding to the notes in the chord
 
 > genValids :: [AbsPitch] -> [[AbsPitch]]
-> genValids triad = [triad]
+> genValids triad = [val | val <-permut, all (<= u_bound) val, all (>= l_bound) val ]
+>	where 	u_bound = absPitch (G,5) 
+>		l_bound = absPitch (E,4)
+>		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) [48,60]),j<-(map (+(triad !! 1))[48,60]),k<-(map (+(triad !! 2))[48,60])]
 
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
-> genCandidates key (pclass,dur) =  [initial]--[genValids (map (pattern !!) inv| inv <- inversions]
+> genCandidates key (pclass,dur) =  [initial]--[genValids (map (pattern !!) inv)| inv <- inversions]
 
 	>	where
 	>		pattern = map ((+) (absPitch ((fst key),0) )) chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) ))
