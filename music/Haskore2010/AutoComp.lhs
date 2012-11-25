@@ -189,19 +189,25 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 > genValids triad = [val | val <-permut, all (<= u_bound) val, all (>= l_bound) val ]
 >	where 	u_bound = absPitch (G,5) 
 >		l_bound = absPitch (E,4)
->		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) [48,60]),j<-(map (+(triad !! 1))[48,60]),k<-(map (+(triad !! 2))[48,60])]
+>		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) [47,59]),j<-(map (+(triad !! 1))[47,59]),k<-(map (+(triad !! 2))[47,59])]
+
+> genValidsWithDur :: [[[AbsPitch]]] -> Dur -> [[(AbsPitch,Dur)]]
+> genValidsWithDur pts d = [zip pt [d] | pt <-(concat pts)]
 
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
-> genCandidates key (pclass,dur) =  [initial]--[genValids (map (pattern !!) inv)| inv <- inversions]
+> genCandidates key (pclass,dur) = [initial]-- genValidsWithDur [genValids (map (pattern !!) inv)| inv <- inversions] dur
 
-	>	where
-	>		pattern = map ((+) (absPitch ((fst key),0) )) chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) ))
-	>			where
-	>				noteSupp = noteSupply (pclass,0) (snd key)
+>--	where
+>--		pattern = map ((+) (absPitch ((fst key),0) )) chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) ))
+>--			where
+>--				noteSupp = noteSupply (pclass,0) (snd key)
 
 
 > score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
-> score candidates prev = [1..5]
+> score candidates prev = zipWith (+) (in_d cur) (ex_d cur (map (fst) prev))
+>	where 	in_d pts  = [(maximum pt) - (minimum pt) |pt <- pts ]
+>		cur = map (map (fst)) candidates
+>		ex_d pts pre = [sum (map abs (zipWith (-) pt pre) ) | pt<-pts ]
 
 > minimize :: Key -> (PitchClass,Dur) -> [(AbsPitch,Dur)] -> [(AbsPitch,Dur)]
 > minimize key cur prev = candidates !! (minimum (score candidates prev))
