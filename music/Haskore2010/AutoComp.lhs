@@ -181,7 +181,8 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 
 > initial = [(55,wn),(59,wn),(67,wn)] :: [(AbsPitch, Dur)] 
 
-> inversions = [[0,2,4],[2,4,0],[4,0,2]] 
+> inversions = [[0,2,4],[0,4,2],[2,0,4],[2,4,0],[4,0,2],[4,2,0]]
+
 
 Here we work on the basic semitones, corresponding to the notes in the chord
 
