@@ -40,5 +40,6 @@ twinkleChords = [(C,wn),(F,hn),(C,hn),(G,hn),(C,hn),(G,hn),(C,hn),
 
 twinkleBass :: (PitchClass,HarmonicQuality) -> Music
 twinkleBass key = Tempo 3 (autoBass boogie key twinkleChords)
+chord_voicing = Tempo 5 (autoChord (C,Major) twinkleChords)
 
-twinkle = Tempo 3 (twinkleMelody :=: autoComp boogie (F,Major) twinkleChords)
+twinkle = Tempo 3 (twinkleMelody :=: autoComp calypso (F,Major) twinkleChords)

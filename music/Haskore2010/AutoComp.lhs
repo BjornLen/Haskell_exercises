@@ -179,7 +179,7 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 
 > type Key = (PitchClass,HarmonicQuality)
 
-> initial = [(48,wn),(53,wn),(56,wn)] :: [(AbsPitch, Dur)] -- C,E,G in oct 4
+> initial = [(48,wn),(52,wn),(55,wn)] :: [(AbsPitch, Dur)] -- C,E,G in oct 4
 
 > inversions = [[0,2,4],[2,4,0],[4,0,2]] 
 
@@ -189,18 +189,18 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 > genValids triad = [val | val <-permut, all (<= u_bound) val, all (>= l_bound) val ]
 >	where 	u_bound = absPitch (G,5) 
 >		l_bound = absPitch (E,4)
->		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) [47,59]),j<-(map (+(triad !! 1))[47,59]),k<-(map (+(triad !! 2))[47,59])]
+>		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) o45),j<-(map (+(triad !! 1)) o45),k<-(map (+(triad !! 2))o45)]
+>			where o45 = [48,60]
 
 > genValidsWithDur :: [[[AbsPitch]]] -> Dur -> [[(AbsPitch,Dur)]]
 > genValidsWithDur pts d = [zip pt [d] | pt <-(concat pts)]
 
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
-> genCandidates key (pclass,dur) = [initial]-- genValidsWithDur [genValids (map (pattern !!) inv)| inv <- inversions] dur
-
->--	where
->--		pattern = map ((+) (absPitch ((fst key),0) )) chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) ))
->--			where
->--				noteSupp = noteSupply (pclass,0) (snd key)
+> genCandidates key (pclass,dur) =  genValidsWithDur [genValids (map (pattern !!) inv)| inv <- inversions] dur
+>	where
+>		pattern = map ((+) (absPitch ((fst key),0) )) (chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) )))
+>			where
+>				noteSupp = noteSupply ((fst key),0) (snd key)
 
 
 > score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
@@ -244,11 +244,11 @@ Om vi vill göra ackord istället för enskilda noter bör det gå att göra hä
 
 ================================================================================
 
-> autoComp :: BassStyle -> (PitchClass,HarmonicQuality) -> ChordProgression -> Music
+> autoComp :: BassStyle -> Key -> ChordProgression -> Music
 > autoComp style key chords =
->	foldr1 (:=:) 
->		[(Instr "Acoustic Bass" bass)]
->	where bass = autoBass style key chords
+>	(Instr "Acoustic Bass" bass) :=: (Instr "flute" chord_v)
+>	where 	bass = autoBass style key chords
+>		chord_v = autoChord key chords
 
 
 
