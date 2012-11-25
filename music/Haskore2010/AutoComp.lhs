@@ -198,7 +198,7 @@ Here we work on the basic semitones, corresponding to the notes in the chord
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
 > genCandidates key (pclass,dur) =  genValidsWithDur [genValids (map (pattern !!) inv)| inv <- inversions] dur
 >	where
->		pattern = map ((+) (absPitch ((fst key),0) )) (chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) )))
+>		pattern = map ((+) (absPitch (pclass,0) )) (chooseScalePattern (snd key) (notePosition noteSupp (absPitch (pclass,0) )))
 >			where
 >				noteSupp = noteSupply ((fst key),0) (snd key)
 
