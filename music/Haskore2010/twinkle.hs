@@ -8,10 +8,6 @@ vol  n = n   v
 v      = [Volume 80]
 lmap f l = line (map f l)
 
--- repeat something n times
-times  1    m = m
-times n m = m :+: (times (n - 1) m)
-
 -- Defining the twinkle melody --
 -- Line 1 in twinkle
 twinkleMelody :: Music
@@ -42,4 +38,4 @@ twinkleBass :: (PitchClass,HarmonicQuality) -> Music
 twinkleBass key = Tempo 3 (autoBass boogie key twinkleChords)
 chord_voicing = Tempo 5 (autoChord (C,Major) twinkleChords)
 
-twinkle = Tempo 3 (twinkleMelody :=: autoComp boogie (F,Major) twinkleChords)
+twinkle = Tempo 3 (twinkleMelody :=: autoComp boogie (C,Major) twinkleChords)
