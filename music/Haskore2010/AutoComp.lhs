@@ -3,8 +3,12 @@ programming at LTH, by Björn Lennernäs and Linus Svensson.
 TODO: set up as latex document.
 ================================================================================
 
+\begin{verbatim}
+
 > module AutoComp where
 > import Haskore hiding(Major,Minor,Key) -- We want to redefine these types
+
+\end{verbatim}
 
 \section{Introduction}
 
@@ -68,8 +72,6 @@ Haskore is 30 whole notes per minute. Thus:
 	> (Note (G,4) wn [Volume 60]) :: Music
 
 \end{verbatim}
-
-
 
 \section{Keys and chords}
 
@@ -187,30 +189,23 @@ the following:
 \end{verbatim}
 
 
+================================================================================
 \section{Bassline}
-The bassline is constructed by looking at the chord classes
-in the chord progression and their chord scales. These 
-scales are then sampled using a bass style, in this 
-assignement we use three different bass styles - basic, 
-boogie and calypso. 
+The bassline is constructed by looking at the chord classes in the chord 
+progression and their chord scales. These scales are then sampled using a bass 
+style, in this assignement we use three different bass styles - basic, boogie 
+and calypso. 
 
-However we also need durations for the notes that we
-construct and they are found by looking at another piece
-of information on the note sheet. The horisontal lines
-are chopped of by vertical lines at regular intervals.
-Each such interval is called a bar and consist a whole
-note. Therefore the bass styles are given as a series of
-sample positions and corresponding durations, where the
-durations add up to a whole note. For example the basic
-bass style consists of half note sample of position
-one in the chord scale, and a half note sample of position
-four. This leads us to define the following code:
+However we also need durations for the notes that we construct and they are 
+found by looking at another piece of information on the note sheet. The 
+horisontal lines are chopped of by vertical lines at regular intervals. Each 
+such interval is called a bar and consist a whole note. Therefore the bass styles 
+are given as a series of sample positions and corresponding durations, where the
+durations add up to a whole note. For example the basic bass style consists of 
+half note sample of position one in the chord scale, and a half note sample of 
+position five. This leads us to define the following code:
 
 \begin{verbatim}
-
-> bassVol = [Volume 100]
-> bassOct = 3 -- the base octave in the bass line
-
 
 > silence = -1 -- Used for bass styles with silent elements.
 > -- Handled in a special way when the notes are constructed. 
@@ -224,34 +219,51 @@ four. This leads us to define the following code:
 
 \end{verbatim}
 
-A problem with this approach though is if two chord symbols
-appear in the same bar. This is simply solved by playing
-the first half of the bassline for the first symbol, and
-the second half for the other. 
+A problem with this approach though is if two chord symbols appear in the same 
+bar. This is simply solved by playing the first half of the bassline for the 
+first symbol, and the first half for the other aswell. 
 
-TODO: Linus to describe code. 
+
+ 
+
 
 > autoBass :: BassStyle -> Key -> ChordProgression -> Music
-> autoBass style key prog = 
->	toMusic (bassLine (cycle style) quality (noteSupply ((fst key),bassOct) quality) prog) bassVol (:+:)
->		where quality = snd key
+> autoBass style key prog =
+>	toMusic
+>		(concat (map (genBass (cycle style) quality (noteSupply pitch quality)) prog))
+>		bassVol
+>		(:+:)
+>	where
+>		pitch = (fst key,bassOct)
+>		quality = snd key
 
-FlÃ¤tar ihop bass style och chordprogression en duration i taget (lite influense av Ã¥kessons variant)
+hej
 
-> bassLine :: BassStyle -> HarmonicQuality -> [AbsPitch] -> ChordProgression -> [(AbsPitch,Dur)]
-> bassLine _ _ _ [] = []
-> bassLine ((st,sdur):sts) quality noteSupp ((ch,cdur):chs)
->	| sdur == 0 = bassLine sts quality noteSupp ((ch,cdur):chs)
->	| cdur == 0 = bassLine ((st,sdur):sts) quality noteSupp chs
->	| otherwise = play st dur : 
->		bassLine ((st,sdur-dur):sts) quality noteSupp ((ch,cdur-dur):chs)
->	where 
->		dur = min sdur cdur
->		play st dur
->			| st == -1 = (silence,dur)
->			| otherwise = ((absPitch (ch,bassOct)) + ((chooseScalePattern quality pos ) !! st),dur)
+\begin{verbatim}
+
+> genBass :: BassStyle -> HarmonicQuality -> [AbsPitch] -> (PitchClass,Dur) 
+>	-> [(AbsPitch,Dur)]
+> genBass ((i,bdur):bs) quality noteSupp (ch,cdur) 
+>	| bdur == 0 = genBass bs quality noteSupp (ch,cdur)
+>	| cdur == 0 = []
+>	| otherwise = play i dur :
+>		genBass ((i,bdur-dur):bs) quality noteSupp (ch,cdur-dur)
+>	where
+>		dur = min bdur cdur
+>		play i dur
+>			| i == -1 = (silence,dur)
+>			| otherwise = ((absPitch (ch,bassOct)) + 
+>				((chooseScalePattern quality pos) !! i),dur)
 >				where pos = notePosition noteSupp (absPitch (ch,0))
 
+\end{verbatim}
+
+\begin{verbatim}
+
+> bassVol = [Volume 100]
+> bassOct = 3 -- the base octave in the bass line
+
+\end{verbatim}
 
 > toMusic :: [(AbsPitch,Dur)] -> [NoteAttribute] -> (Music -> Music -> Music) -> Music
 > toMusic pitches vol f =
@@ -259,6 +271,7 @@ FlÃ¤tar ihop bass style och chordprogression en duration i taget (lite influense
 >	where toNote (p,dur)
 >		| p == silence	= Rest dur
 >		| otherwise	= Note (pitch p) dur vol
+
 
 
 ================================================================================
