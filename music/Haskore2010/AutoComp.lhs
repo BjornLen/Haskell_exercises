@@ -1,16 +1,22 @@
-This document represents the handin for assignement 2 in the course functional 
+\documentclass[a4paper]{article}
+
+\begin{document}
+
+\section{Introduction}
+
+This document represents the handin for assignment 2 in the course functional 
 programming at LTH, by Björn Lennernäs and Linus Svensson. 
-TODO: set up as latex document.
-================================================================================
+It contains a mix of theory, describing the workings of certain 
+aspects of western music, and code which describes a way to utilize the
+theory to automatically generate accompaniments for musical scores. Lets
+start by setting op the environment. 
+
+\begin{verbatim}
 
 > module AutoComp where
 > import Haskore hiding(Major,Minor,Key) -- We want to redefine these types
 
-\section{Introduction}
-
-This document contains a mix of theory, describing the workings of certain 
-aspects of western music, and code which describes a way to utilize the
-theory to automatically generate accompaniments for musical scores. 
+\end{verbatim}
 
 \section{The basics}
 First things first, what is a musical score? A musical score is basically
@@ -26,8 +32,8 @@ lie and consist of, at least in this document, one of the letters C,D,E,F,G,A.
 Which naturally leads to the next topic, what does C,D,E... represent? To
 answer that it helps to first answer a more basic question and that is: What
 is the relationship between a note and an actual physical sound? It must
-somehow relate to the frequency of the sound, since different frequencys are
-basically different sounds (although other factors, souch as volume, 
+somehow relate to the frequency of the sound, since different frequencies are
+basically different sounds (although other factors, such as volume, 
 instrument etc. also play a role). 
 
 The way notes works is that they belong to different frequency sections 
@@ -40,13 +46,13 @@ distance between semitones is assumed to be equal.
 
 Another import quality of octaves is that the frequency range they
 represent double between each octave, where the first octave has an 
-approximate frequenzy range of 30 to 60 hz. The highest octave 
+approximate frequency range of 30 to 60 hz. The highest octave 
 represented on a piano is typically the seventh.  
 
 To reiterate then, C,D,E,.. represent one position on an equidistant 
 frequency scale, with twelve positions called semitones. To use that 
-informatation to construct a sound we also need an octave, which is 
-basically a multiple of octaves. So, given a positon and an octave we
+information to construct a sound we also need an octave, which is 
+basically a multiple of octaves. So, given a position and an octave we
 have physical sound frequency, and to construct a sound from that all
 we need is a duration, an instrument and a volume. Here the convention
 is to call the combination of position in an octave and an octave a 
@@ -87,10 +93,10 @@ In this document this key is used in two ways to construct the note supply.
 First its harmonic quality is used to choose a pattern, basically positions
 in an octave, and its root is used to align the pattern so that the note
 supply starts at this section of the octave. There are several different
-patterns to choose from for both major and minor, in this assignement
+patterns to choose from for both major and minor, in this assignment
 only the most common for major and minor are used and they are called
 ionian and aeolian respectively (see below). Furthermore the note supply
-also needs an octave to represent a set of unique pitches, in this assignement
+also needs an octave to represent a set of unique pitches, in this assignment
 the melody is played with this octave set to four. This leads us to construct
 the following types and definitions.
 
@@ -118,7 +124,7 @@ the following types and definitions.
 So given a note supply pitches for the notes on the note sheet are constructed
 from this supply by looking at their position in the sheet. The note that
 starts two steps below the bottom line in the sheet is the first in the note 
-supply and every subsequent step is are choosen from the pattern íncrementally.
+supply and every subsequent step is are chosen from the pattern íncrementally.
 
 
 \subsection{Chordprogressions, chord scales}
@@ -128,14 +134,14 @@ written above the lines in the note sheet. This series of letters is called
 the chord progression. We are interested in constructing two things from the 
 chord progression, basslines and chord voicing. The chord voicing consists
 of chords, and cords are three notes played at the same time, in this 
-assignement only three are used in a chord. This series of chords is 
+assignment only three are used in a chord. This series of chords is 
 constructed from the chord progression. The bassline consists of a series
-notes constructed from a bassstyle, defined below, and the chord progression.
+notes constructed from a bass style, defined below, and the chord progression.
 However we need to cover some more properties of chords before we can go on.
 we only play three. To do that we first need to cover some properties of chords.
 
 
-The chord symbols represent chord classes which is a concept similiar
+The chord symbols represent chord classes which is a concept similar
 to that of keys. A chord class has a root, which is the symbol itself,
 a harmonic, and a pattern. These properties then map to notes that in
 a musical sense belong to each other . The pattern is used to find
@@ -276,16 +282,16 @@ from different octaves, as long as they lie within a certain range.
 
 Given for example the chord scale (notes given as absolute pitches without
 duration)  [55,56,59,63,65,67] we sample with the basic triad and obtain
-[55,59,65]. We then say that it is okay to choose the notes for our chord
-by finding the corresponding pitchclasses for this sample, i.e [F#,A#,E].
+[55,59,65]. We then notice that it is easiest to go on by finding 
+the corresponding pitchclasses for this sample, i.e [F\#,A\#,E].
 We then find all combinations of these classes in a certain note range,
-here set to (E,4), (G,5), one such combination is [(E,4),(F#,5),(A,4)],
-but [(E,4),(F#,5),(A,5)] is note valid since (A,5) > (G,5). (This
+here set to (E,4), (G,5), one such combination is [(E,4),(F\#,5),(A,4)],
+but [(E,4),(F\#,5),(A,5)] is note valid since (A,5) > (G,5). (This
 is how we interpreted the rules, however we're not sure that it is
 okay the shuffle the order in any way. We did it though.) 
 
 So, given these candidates, which one do we choose? We need to score them in
-some way and to critera we use are: 1 - Look at the internal distance, i.e.
+some way and two criteria we use are: 1 - Look at the internal distance, i.e.
 distance in absPitch between the lowest and highest note for a candidate, 
 the lower the better. 2 - Look at the previous chord played and check the
 absolute distance between the first element in the previous chord and the
@@ -371,7 +377,6 @@ Here we also add a disclaimer. We really don't know the first
 thing about music theory and several things are probably wrong
 in this presentation. We were just working on a given description.
 
-
 \begin{verbatim}
 
 > autoComp :: BassStyle -> Key -> ChordProgression -> Music
@@ -383,7 +388,7 @@ in this presentation. We were just working on a given description.
 \end{verbatim}
 
 
-
+\end{document}
 
 
 
