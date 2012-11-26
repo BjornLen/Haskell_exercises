@@ -10,8 +10,8 @@
 > attachHeads h1 h2 aList = [(h1:xs,h2:ys) | (xs,ys) <- aList]
 
 > maximaBy :: Ord b => (a -> b) -> [a] -> [a] 
-> maximaBy valueFcn xs = [x | x <- xs,(valueFcn x) == (maximum xs_comp)]
->           where xs_comp = map valueFcn xs
+> maximaBy valueFcn xs = [x | x <- xs,(valueFcn x) == max_val]
+>           where max_val = maximum $ map valueFcn xs
 
 > type AlignmentType = (String,String)
 > optAlignments :: String -> String -> [AlignmentType]
@@ -21,8 +21,5 @@
 > scoreMismatch = -1
 > scoreSpace = -1
 
-> similarityScore :: String -> String -> Int
-> similarityScore string1 string2
-
-> outputAlignements :: String -> String -> [String]
-> outputOptAlignments string1 string2
+> outputOptAlignments :: String -> String -> [String]
+> outputOptAlignments string1 string2 = [string1]   
