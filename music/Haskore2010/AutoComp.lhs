@@ -223,24 +223,15 @@ A problem with this approach though is if two chord symbols appear in the same
 bar. This is simply solved by playing the first half of the bassline for the 
 first symbol, and the first half for the other aswell. 
 
-
- 
-
-
-> autoBass :: BassStyle -> Key -> ChordProgression -> Music
-> autoBass style key prog =
->	toMusic
->		(concat (map (genBass (cycle style) quality (noteSupply pitch quality)) prog))
->		bassVol
->		(:+:)
->	where
->		pitch = (fst key,bassOct)
->		quality = snd key
-
-hej
+The major function for generating the bass line generates it only for
+ont chord at the time. It produces some kind of intermidiate music
+represented as a list of absolut pitched and their durations.
 
 \begin{verbatim}
 
+> -- Generates music for one pitch in chordprogression.
+> -- the bass style is supposed to be infinit, or at least as long 
+> -- as the duration of the pitch.
 > genBass :: BassStyle -> HarmonicQuality -> [AbsPitch] -> (PitchClass,Dur) 
 >	-> [(AbsPitch,Dur)]
 > genBass ((i,bdur):bs) quality noteSupp (ch,cdur) 
@@ -258,13 +249,37 @@ hej
 
 \end{verbatim}
 
+We have a function to combine everything together. Since the genBass function
+only works with one chord at the time we need to apply it separately
+for each chord in the chord progression and then combine the results togheter.
+
+\begin{verbatim} 
+
+> -- Given a bass style, Key and the chordpragression gives music
+> autoBass :: BassStyle -> Key -> ChordProgression -> Music
+> autoBass style key prog =
+>	toMusic
+>		(concat (map (genBass (cycle style) quality 
+>			(noteSupply pitch quality)) prog))
+>		bassVol
+>		(:+:)
+>	where
+>		pitch = (fst key,bassOct)
+>		quality = snd key
+
+\end{verbatim}
+
+To make generation easier we have two attributes for the volume and octave
+for the bass line.
+
 \begin{verbatim}
 
 > bassVol = [Volume 100]
 > bassOct = 3 -- the base octave in the bass line
 
-\end{verbatim}
-
+> -- convert our internal representation to a Haskore Music type.
+> -- the function f is used to define how the input is combined
+> -- (i.e parallell or sequentialy).
 > toMusic :: [(AbsPitch,Dur)] -> [NoteAttribute] -> (Music -> Music -> Music) -> Music
 > toMusic pitches vol f =
 >	foldr1 f (map toNote pitches)
@@ -272,7 +287,7 @@ hej
 >		| p == silence	= Rest dur
 >		| otherwise	= Note (pitch p) dur vol
 
-
+\end{verbatim}
 
 ================================================================================
 
@@ -371,9 +386,6 @@ this into code:
 >		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) o45),j<-(map (+(triad !! 1)) o45),k<-(map (+(triad !! 2))o45)]
 >			where o45 = [48,60]
 
-
-
-
 \end{verbatim}
 
 \section{End}
@@ -394,10 +406,3 @@ in this presentation. We were just working on a given description.
 >		chord_v = autoChord key chords
 
 \end{verbatim}
-
-
-
-
-
-
-
