@@ -72,7 +72,28 @@ Haskore is 30 whole notes per minute. Thus:
 
 
 \section{Keys and chords}
-So how do we interpret a note sheet? 
+So how do we interpret a note sheet? An important concept is that of note 
+supplies. As a rule only a subset of the pitchclasses are used in a song,
+this subset is called the note supply for the piece and it is from these
+pitchclasses that the Pitches in a melody are formed. To construct the 
+note supple for a piece its key is needed, which is an object with two
+properties - a root, which is a pitchclass, and a harmonic quality, which 
+is either major or minor. Thus (C,Major) is a Key.
+
+In this document this key is used in two ways to construct the note supply. 
+First its harmonic quality is used to choose a pattern, basically positions
+in an octave, and its root is used to align the pattern so that the note
+supply starts at this section of the octave. There are several different
+patterns to choose from for both major and minor, in this assignement
+only the most common for major and minor are used and they are called
+ionian and aeolian respectively (see below). Furthermore the note supply
+also needs an octave to represent a set of unique pitches, in this assignement
+the melody is played with this octave set to four.
+
+So given a note supply pitches for the notes on the note sheet are constructed
+from this supply by looking at their position in the sheet. The note that
+starts two steps below the bottom line in the sheet is the first in the note 
+supply and every subsequent step is are choosen from the pattern by  
 
 
 What is a key? Root + harmonic (C Major). 
@@ -217,12 +238,10 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 ================================================================================
 
 > autoChord :: Key -> ChordProgression -> Music
-> autoChord key chords = genChord key chords []
+> autoChord key chords = genChord key chords initial
 
 > genChord :: Key -> ChordProgression -> [(AbsPitch,Dur)] -> Music
 > genChord key [] _ = Rest 0 
-> genChord key (ch:chs) [] = (toMusic minimal chordVol (:=:)):+:(genChord key chs minimal)
->	where minimal = minimize key ch initial
 > genChord key (ch:chs) prev = (toMusic minimal chordVol (:=:)):+:(genChord key chs minimal)
 > 	where minimal = minimize key ch prev
 
