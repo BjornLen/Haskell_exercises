@@ -18,8 +18,8 @@ music in printed form, the characteristic sheet of music is a musical score.
 The rules that govern how such scores are interpreted are quite complex 
 and only a subset of them will be described and utilized here. For the 
 purpose of this document however a musical score consists of notes
-and chords. The chords are written above the lines wherein the notes lie and 
-consist of, at least in this document, one of the letters C,D,E,F,G,A.
+and chords. The chord symbols are written above the lines wherein the notes 
+lie and consist of, at least in this document, one of the letters C,D,E,F,G,A.
 
 \subsection{Notes}
 
@@ -72,6 +72,9 @@ Haskore is 30 whole notes per minute. Thus:
 
 
 \section{Keys and chords}
+
+\subsection{Note supplies, patterns, harmonic qualities}
+
 So how do we interpret a note sheet? An important concept is that of note 
 supplies. As a rule only a subset of the pitchclasses are used in a song,
 this subset is called the note supply for the piece and it is from these
@@ -118,32 +121,38 @@ starts two steps below the bottom line in the sheet is the first in the note
 supply and every subsequent step is are choosen from the pattern �ncrementally.
 
 
+\subsection{Chordprogressions, chord scales}
+Having found a way to construct a melody from the note sheet we now turn to
+the chords. The cord symbols are, as mentioned above, the series of letters
+written above the lines in the note sheet. This series of letters is called
+the chord progression. We are interested in constructing two things from the 
+chord progression, basslines and chord voicing. The chord voicing consists
+of chords, and cords are three notes played at the same time, in this 
+assignement only three are used in a chord. This series of chords is 
+constructed from the chord progression. The bassline consists of a series
+notes constructed from a bassstyle, defined below, and the chord progression.
+However we need to cover some more properties of chords before we can go on.
+we only play three. To do that we first need to cover some properties of chords.
 
 
-What is a key? Root + harmonic (C Major). 
-Harmonic gives pattern - how to pick a note scale from the octave.
-Different patterns
+The chord symbols represent chord classes which is a concept similiar
+to that of keys. A chord class has a root, which is the symbol itself,
+a harmonic, and a pattern. These properties then map to notes that in
+a musical sense belong to each other . The pattern is used to find
+the chord scale, which is a set of notes from which chords and basslines
+are constructed. The pattern is found by: 
+1 - Find the root of the chord class as the chord symbol itself
+2 - Find the position of the pitchclass represented by the root of
+the chord class in the note supply of the melody.
+3 - Use the position and the harmonic of the chord class and find the
+corresponding pattern from a list (see below for the list itself). 
+The chord scale is then simply constructed by applying the pattern
+to the root of the chord class. Given these rules we construct
+the following:
 
-Chords belong to chord class. Chords class similar to key: root, harmonic, chord 
-pattern (used to build chord, e.g. basic triad), chord scale - given by a 
-function applied on the key of the song and the choords root and pattern 
-tabular. 
-
-TODO: Define keys and how to pick not supply from keys. How to 
-
-
-================================================================================
-
-This is the definition of a ChordProgression
+\begin{verbatim}
 
 > type ChordProgression = [(PitchClass,Dur)]
-
-\section{Scale Patterns}
-================================================================================
-
-En listning av olika scalepatterns
-Väljer ett scalepattern baserat på om man har major eller minor och vilken
-position den aktuella noten har i grundskalan (typ C major)
 
 > chooseScalePattern :: HarmonicQuality -> Int -> ScalePattern
 > chooseScalePattern quality 
@@ -160,49 +169,67 @@ position den aktuella noten har i grundskalan (typ C major)
 >			| pos == 1 = dorian
 >			| pos == 2 = phrygian
 
-Skapar en notskala baserat på pitklassen (typ C eller D) och i vilken oktav
-man vill att skalan ska börja i. Tänkte att man väljer 3 där för bass line.
-Sen får man en lista med ABsPitches.
-
-================================================================================
-
-Tar reda på positionen för en specifik pitch i en given grundskala.
-N�Nmn problem med att vi f�r ut sista index om den inte �terfinns.
-
+> -- We're intrested in the position of a pitchclass
+> -- in a list of Pitches. It's easier to convert each 
+> -- pitch to an abspitch (octave*12 + pos pitchclass)
+> -- and then only work the the positions of the elements
+> -- in the zeroth octave (thus, use modulo 12)
 > notePosition :: [AbsPitch] -> AbsPitch -> Int
 > notePosition scale ab = pos (map (`mod` 12) scale) ab 0
 
+> -- Short help function, find index of element in a list
 > pos :: Eq a => [a] -> a -> Int -> Int
 > pos [] _ i = i 			
 > pos (x:xs) xr i 
 >	| x == xr = i
 >	| x /= xr = pos xs xr (i+1)
 
-================================================================================
+\end{verbatim}
 
-\section{Bass Lines}
 
-Some properties for the bass line.
+\section{Bassline}
+The bassline is constructed by looking at the chord classes
+in the chord progression and their chord scales. These 
+scales are then sampled using a bass style, in this 
+assignement we use three different bass styles - basic, 
+boogie and calypso. 
+
+However we also need durations for the notes that we
+construct and they are found by looking at another piece
+of information on the note sheet. The horisontal lines
+are chopped of by vertical lines at regular intervals.
+Each such interval is called a bar and consist a whole
+note. Therefore the bass styles are given as a series of
+sample positions and corresponding durations, where the
+durations add up to a whole note. For example the basic
+bass style consists of half note sample of position
+one in the chord scale, and a half note sample of position
+four. This leads us to define the following code:
+
+\begin{verbatim}
 
 > bassVol = [Volume 100]
 > bassOct = 3 -- the base octave in the bass line
 
-De olika bass stylesen definierade.
+
+> silence = -1 -- Used for bass styles with silent elements.
+> -- Handled in a special way when the notes are constructed. 
 
 > type BassStyle = [(Int,Dur)]
-
-> silence = -1
-
 > basic, calypso, boogie :: BassStyle
 > basic = [(0,hn),(4,hn)]
 > calypso = [(silence,qn),(0,en),(2,en),(silence,qn),(0,en),(2,en)]
 > boogie = [(0,en),(4,en),(5,en),(4,en),
 >	(0,en),(4,en),(5,en),(4,en)]
 
+\end{verbatim}
 
-================================================================================
+A problem with this approach though is if two chord symbols
+appear in the same bar. This is simply solved by playing
+the first half of the bassline for the first symbol, and
+the second half for the other. 
 
-Den anropar bassLine som flätar ihop style och chordprogression och tillverkar grundskalan.
+TODO: Linus to describe code. 
 
 > autoBass :: BassStyle -> Key -> ChordProgression -> Music
 > autoBass style key prog = 
@@ -286,7 +313,7 @@ Om vi vill göra ackord istället för enskilda noter bör det gå att göra hä
 
 > autoComp :: BassStyle -> Key -> ChordProgression -> Music
 > autoComp style key chords =
->	(Instr "Acoustic Bass" bass) :=: (Instr "Harpsichord" chord_v)
+>	(Instr "Acoustic Bass" bass) :=: (Instr "flute" chord_v)
 >	where 	bass = autoBass style key chords
 >		chord_v = autoChord key chords
 
