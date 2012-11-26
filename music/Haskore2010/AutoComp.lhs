@@ -276,24 +276,79 @@ hej
 
 ================================================================================
 
+\section{Chord voicing}
+To generate a chord from a chord symbol in the chord progression we start
+with finding the chord scale for the corresponding chord class. Since we
+want to play three notes at the same time we need to sample this scale,
+the way we do it here is by using the basic triad which consist of the 
+first, third and fifth note of the chord scale. However, we cannot 
+simply choose these note as they are and be done with it, because it sounds
+bad (we assume). What we instead do is that we say that it is okay
+to shuffle the order of these notes and that it is okay to choose the notes
+from different octaves, as long as they lie within a certain range.
+
+Given for example the chord scale (notes given as absolute pitches without
+duration)  [55,56,59,63,65,67] we sample with the basic triad and obtain
+[55,59,65]. We then say that it is okay to choose the notes for our chord
+by finding the corresponding pitchclasses for this sample, i.e [F#,A#,E].
+We then find all combinations of these classes in a certain note range,
+here set to (E,4), (G,5), one such combination is [(E,4),(F#,5),(A,4)],
+but [(E,4),(F#,5),(A,5)] is note valid since (A,5) > (G,5). (This
+is how we interpreted the rules, however we're not sure that it is
+okay the shuffle the order in any way. We did it though.) 
+
+So, given these candidates, which one do we choose? We need to score them in
+some way and to critera we use are: 1 - Look at the internal distance, i.e.
+distance in absPitch between the lowest and highest note for a candidate, 
+the lower the better. 2 - Look at the previous chord played and check the
+absolute distance between the first element in the previous chord and the
+first element in the candidate, and vice versa for the rest, and then sum 
+them up. The lower such sum of distances the better (since it sounds 
+better, we're told). 
+
+Having done this we weigh these two values together, e.g. using their sum
+or weighted sum, and pick the candidate with the minimum score. To put
+this into code: 
+
+\begin{verbatim}
+
+> -- Send in the key and the Chord progression, obtain music!
+> -- Since we dont a "previous chord" for the first symbol
+> -- we send in an initial chord which represent a typical chord.
 > autoChord :: Key -> ChordProgression -> Music
 > autoChord key chords = genChord key chords initial
+> 	where  initial = [(55,wn),(59,wn),(67,wn)] :: [(AbsPitch, Dur)]
 
+> -- Make music of the minimal candidate for each chord symbol
+> -- in the progression. 
 > genChord :: Key -> ChordProgression -> [(AbsPitch,Dur)] -> Music
 > genChord key [] _ = Rest 0 
 > genChord key (ch:chs) prev = (toMusic minimal chordVol (:=:)):+:(genChord key chs minimal)
 > 	where minimal = minimize key ch prev
 
+> chordVol = [Volume 10] -- Used to set the volume of the chords, see genChord.
+
+> -- Chooses the minimal candidate by calling a function which
+> -- generates the candidates and a function that scores them. 
 > minimize :: Key -> (PitchClass,Dur) -> [(AbsPitch,Dur)] -> [(AbsPitch,Dur)]
 > minimize key cur prev = candidates !! (pos (score candidates prev) (minimum (score candidates prev)) 0)
 >	where 	candidates = genCandidates key cur 
 
+> -- Construct the sum by looking at the internal distance and 
+> -- the distance to the previous chord. Here weighted together
+> -- as 3*internal + 2*external
 > score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
 > score candidates prev = zipWith (+) (map (3*) (in_d cur)) (map (2*) (ex_d cur (map (fst) prev)))
 >	where 	in_d pts  = [(maximum pt) - (minimum pt) |pt <- pts ]
 >		cur = map (map (fst)) candidates
 >		ex_d pts pre = [sum (map abs (zipWith (-) pt pre) ) | pt<-pts ]
 
+> -- This function relies on a function genValids which finds all
+> -- the combinations (in the different octaves) given a certain
+> -- pattern of pitchclasses. The patterns are generated from the
+> -- chord scale of the chord. The result from genValid is also
+> -- wrapped in a function combines the candidates with the chord
+> -- symbols' duration.
 > genCandidates :: Key -> (PitchClass,Dur) -> [[(AbsPitch,Dur)]]
 > genCandidates key (pclass,dur) =  genValidsWithDur [genValids (map (`mod`12) (map (pattern !!) inv))| inv <- inversions] dur
 >	where
@@ -301,10 +356,14 @@ hej
 >			where
 >				noteSupp = noteSupply ((fst key),0) (snd key)
 
+> -- Take a list of candidates and insert a duration next to 
+> -- every abspitch
 > genValidsWithDur :: [[[AbsPitch]]] -> Dur -> [[(AbsPitch,Dur)]]
 > genValidsWithDur pts d = [zip pt durs | pt <-(concat pts)]
 > 	where durs = [d,d,d]
 
+> -- Generate all valid combinations in the different octaves
+> -- for the given pattern using list comprehension.
 > genValids :: [AbsPitch] -> [[AbsPitch]]
 > genValids triad = [val | val <-permut, all (<= u_bound) val, all (>= l_bound) val ]
 >	where 	u_bound = absPitch (G,5) 
@@ -312,17 +371,21 @@ hej
 >		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) o45),j<-(map (+(triad !! 1)) o45),k<-(map (+(triad !! 2))o45)]
 >			where o45 = [48,60]
 
-> initial = [(55,wn),(59,wn),(67,wn)] :: [(AbsPitch, Dur)] 
-
-> chordVol = [Volume 10]
-
-> inversions = [[0,2,4],[2,4,0],[4,0,2],[2,4,0],[4,0,2],[4,2,0]]
 
 
-bassLine genererar en lista med absolut pitchar och durations som görs till noter här.
-Om vi vill göra ackord istället för enskilda noter bör det gå att göra här.
 
-================================================================================
+\end{verbatim}
+
+\section{End}
+And we are done. Given below is a function to combine chord
+voicing and bassline generation. It sounds fairly good. 
+
+Here we also add a disclaimer. We really don't know the first
+thing about music theory and several things are probably wrong
+in this presentation. We were just working on a given description.
+
+
+\begin{verbatim}
 
 > autoComp :: BassStyle -> Key -> ChordProgression -> Music
 > autoComp style key chords =
@@ -330,7 +393,7 @@ Om vi vill göra ackord istället för enskilda noter bör det gå att göra hä
 >	where 	bass = autoBass style key chords
 >		chord_v = autoChord key chords
 
-
+\end{verbatim}
 
 
 
