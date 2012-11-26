@@ -10,7 +10,7 @@ lmap f l = line (map f l)
 
 -- Defining the melody for imperial march
 jingleMelody :: Music
-oct = 4
+oct = 5
 -- line 1
 p11 = 	lmap (fd qn) [e oct, e oct] :+:
 	lmap (fd hn) [e oct]
@@ -45,4 +45,4 @@ jingleChords = [(C,wn),(C,wn),(C,wn),(C,wn),
 	(C,wn),(C,wn),(C,wn),(C,wn),
 	(F,wn),(C,wn),(G,wn),(C,wn)]
 
-jingle = Tempo 3 (jingleMelody :=: autoComp boogie (C,Major) jingleChords)
+jingle = Tempo 3 (jingleMelody :=: autoComp basic (C,Major) jingleChords)

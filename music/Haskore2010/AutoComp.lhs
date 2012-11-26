@@ -2,13 +2,6 @@
 
 \begin{document}
 
-\begin{verbatim}
-
-> module AutoComp where
-> import Haskore hiding(Major,Minor,Key) -- We want to redefine these types
-
-\end{verbatim}
-
 \section{Introduction}
 
 This document represents the handin for assignment 2 in the course functional
@@ -44,9 +37,9 @@ basically different sounds (although other factors, such as volume,
 instrument etc. also play a role).
 
 The way notes works is that they belong to different frequency sections 
-called octaves, where octave 1 is the lowest found on pianos. So for a 
-note to make sense it needs to be accompanied with its octave, e.g. 
-Note $\in$ (C, 4) which denotes a C in the fourth octave. The letters C - A 
+called octaves, where octave 1 is the lowest found on pianos. So for a
+note to make sense it needs to be accompanied with its octave, e.g.
+Note $\in$ (C, 4) which denotes a C in the fourth octave. The letters C - A
 then represent different positions within an octave, called semitones,
 and each octave is divided into twelve semitones. In this document the
 distance between semitones is assumed to be equal.
@@ -56,9 +49,9 @@ represent double between each octave, where the first octave has an
 approximate frequency range of 30 to 60 hz. The highest octave 
 represented on a piano is typically the seventh.  
 
-To reiterate then, C,D,E,.. represent one position on an equidistant 
-frequency scale, with twelve positions called semitones. To use that 
-information to construct a sound we also need an octave, which is 
+To reiterate then, C,D,E,.. represent one position on an equidistant
+frequency scale, with twelve positions called semitones. To use that
+information to construct a sound we also need an octave, which is
 basically a multiple of octaves. So, given a position and an octave we
 have physical sound frequency, and to construct a sound from that all
 we need is a duration, an instrument and a volume. Here the convention
@@ -94,7 +87,7 @@ note supple for a piece its key is needed, which is an object with two
 properties - a root, which is a pitchclass, and a harmonic quality, which 
 is either major or minor. Thus (C,Major) is a Key.
 
-In this document this key is used in two ways to construct the note supply. 
+In this document this key is used in two ways to construct the note supply.
 First its harmonic quality is used to choose a pattern, basically positions
 in an octave, and its root is used to align the pattern so that the note
 supply starts at this section of the octave. There are several different
@@ -131,7 +124,6 @@ from this supply by looking at their position in the sheet. The note that
 starts two steps below the bottom line in the sheet is the first in the note 
 supply and every subsequent step is are chosen from the pattern íncrementally.
 
-
 \subsection{Chordprogressions, chord scales}
 Having found a way to construct a melody from the note sheet we now turn to
 the chords. The cord symbols are, as mentioned above, the series of letters
@@ -145,7 +137,6 @@ notes constructed from a bass style, defined below, and the chord progression.
 However we need to cover some more properties of chords before we can go on.
 we only play three. To do that we first need to cover some properties of chords.
 
-
 The chord symbols represent chord classes which is a concept similar
 to that of keys. A chord class has a root, which is the symbol itself,
 a harmonic, and a pattern. These properties then map to notes that in
@@ -156,7 +147,7 @@ are constructed. The pattern is found by:
 2 - Find the position of the pitchclass represented by the root of
 the chord class in the note supply of the melody.
 3 - Use the position and the harmonic of the chord class and find the
-corresponding pattern from a list (see below for the list itself). 
+corresponding pattern from a list (see below for the list itself).
 The chord scale is then simply constructed by applying the pattern
 to the root of the chord class. Given these rules we construct
 the following:
@@ -190,15 +181,13 @@ the following:
 
 > -- Short help function, find index of element in a list
 > pos :: Eq a => [a] -> a -> Int -> Int
-> pos [] _ i = i 			
-> pos (x:xs) xr i 
+> pos [] _ i = i
+> pos (x:xs) xr i
 >	| x == xr = i
 >	| x /= xr = pos xs xr (i+1)
 
 \end{verbatim}
 
-
-================================================================================
 \section{Bassline}
 The bassline is constructed by looking at the chord classes in the chord 
 progression and their chord scales. These scales are then sampled using a bass 
@@ -217,7 +206,7 @@ position five. This leads us to define the following code:
 \begin{verbatim}
 
 > silence = -1 -- Used for bass styles with silent elements.
-> -- Handled in a special way when the notes are constructed. 
+> -- Handled in a special way when the notes are constructed.
 
 > type BassStyle = [(Int,Dur)]
 > basic, calypso, boogie :: BassStyle
@@ -228,9 +217,9 @@ position five. This leads us to define the following code:
 
 \end{verbatim}
 
-A problem with this approach though is if two chord symbols appear in the same 
-bar. This is simply solved by playing the first half of the bassline for the 
-first symbol, and the first half for the other aswell. 
+A problem with this approach though is if two chord symbols appear in the same
+bar. This is simply solved by playing the first half of the bassline for the
+first symbol, and the first half for the other aswell.
 
 The major function for generating the bass line generates it only for
 ont chord at the time. It produces some kind of intermidiate music
@@ -241,9 +230,9 @@ represented as a list of absolut pitched and their durations.
 > -- Generates music for one pitch in chordprogression.
 > -- the bass style is supposed to be infinit, or at least as long 
 > -- as the duration of the pitch.
-> genBass :: BassStyle -> HarmonicQuality -> [AbsPitch] -> (PitchClass,Dur) 
+> genBass :: BassStyle -> HarmonicQuality -> [AbsPitch] -> (PitchClass,Dur)
 >	-> [(AbsPitch,Dur)]
-> genBass ((i,bdur):bs) quality noteSupp (ch,cdur) 
+> genBass ((i,bdur):bs) quality noteSupp (ch,cdur)
 >	| bdur == 0 = genBass bs quality noteSupp (ch,cdur)
 >	| cdur == 0 = []
 >	| otherwise = play i dur :
@@ -283,7 +272,7 @@ for the bass line.
 
 \begin{verbatim}
 
-> bassVol = [Volume 100]
+> bassVol = [Volume 60]
 > bassOct = 3 -- the base octave in the bass line
 
 > -- convert our internal representation to a Haskore Music type.
@@ -317,16 +306,16 @@ We then find all combinations of these classes in a certain note range,
 here set to (E,4), (G,5), one such combination is [(E,4),(F\#,5),(A,4)],
 but [(E,4),(F\#,5),(A,5)] is note valid since (A,5) > (G,5). (This
 is how we interpreted the rules, however we're not sure that it is
-okay the shuffle the order in any way. We did it though.) 
+okay the shuffle the order in any way. We did it though.)
 
 So, given these candidates, which one do we choose? We need to score them in
 some way and two criteria we use are: 1 - Look at the internal distance, i.e.
 distance in absPitch between the lowest and highest note for a candidate, 
 the lower the better. 2 - Look at the previous chord played and check the
 absolute distance between the first element in the previous chord and the
-first element in the candidate, and vice versa for the rest, and then sum 
-them up. The lower such sum of distances the better (since it sounds 
-better, we're told). 
+first element in the candidate, and vice versa for the rest, and then sum
+them up. The lower such sum of distances the better (since it sounds
+better, we're told).
 
 Having done this we weigh these two values together, e.g. using their sum
 or weighted sum, and pick the candidate with the minimum score. To put
@@ -342,16 +331,16 @@ this into code:
 > 	where  initial = [(55,wn),(59,wn),(67,wn)] :: [(AbsPitch, Dur)]
 
 > -- Make music of the minimal candidate for each chord symbol
-> -- in the progression. 
+> -- in the progression.
 > genChord :: Key -> ChordProgression -> [(AbsPitch,Dur)] -> Music
-> genChord key [] _ = Rest 0 
+> genChord key [] _ = Rest 0
 > genChord key (ch:chs) prev = (toMusic minimal chordVol (:=:)):+:(genChord key chs minimal)
 > 	where minimal = minimize key ch prev
 
 > chordVol = [Volume 10] -- Used to set the volume of the chords, see genChord.
 
 > -- Chooses the minimal candidate by calling a function which
-> -- generates the candidates and a function that scores them. 
+> -- generates the candidates and a function that scores them.
 > minimize :: Key -> (PitchClass,Dur) -> [(AbsPitch,Dur)] -> [(AbsPitch,Dur)]
 > minimize key cur prev = candidates !! (pos (score candidates prev) (minimum (score candidates prev)) 0)
 >	where 	candidates = genCandidates key cur 
@@ -378,7 +367,9 @@ this into code:
 >			where
 >				noteSupp = noteSupply ((fst key),0) (snd key)
 
-> -- Take a list of candidates and insert a duration next to 
+> inversions = [[0,2,4],[0,4,2],[2,0,4],[2,4,0],[4,0,2],[4,2,0]]
+
+> -- Take a list of candidates and insert a duration next to
 > -- every abspitch
 > genValidsWithDur :: [[[AbsPitch]]] -> Dur -> [[(AbsPitch,Dur)]]
 > genValidsWithDur pts d = [zip pt durs | pt <-(concat pts)]
@@ -388,7 +379,7 @@ this into code:
 > -- for the given pattern using list comprehension.
 > genValids :: [AbsPitch] -> [[AbsPitch]]
 > genValids triad = [val | val <-permut, all (<= u_bound) val, all (>= l_bound) val ]
->	where 	u_bound = absPitch (G,5) 
+>	where 	u_bound = absPitch (G,5)
 >		l_bound = absPitch (E,4)
 >		permut  = [[i,j,k] | i<-(map (+(triad !! 0)) o45),j<-(map (+(triad !! 1)) o45),k<-(map (+(triad !! 2))o45)]
 >			where o45 = [48,60]
