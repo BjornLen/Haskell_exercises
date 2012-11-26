@@ -15,7 +15,7 @@ times n m = m :+: (times (n - 1) m)
 -- Defining the twinkle melody --
 -- Line 1 in twinkle
 twinkleMelody :: Music
-oct = 5
+oct = 4 
 p11 = lmap (fd qn) [c oct, c oct, g oct, g oct, a oct, a oct ]
 p12 = lmap (fd hn) [g oct]
 p13 = lmap (fd qn) [f oct, f oct, e oct, e oct, d oct, d oct]
@@ -42,4 +42,4 @@ twinkleBass :: (PitchClass,HarmonicQuality) -> Music
 twinkleBass key = Tempo 3 (autoBass boogie key twinkleChords)
 chord_voicing = Tempo 5 (autoChord (C,Major) twinkleChords)
 
-twinkle = Tempo 3 (twinkleMelody :=: autoComp calypso (F,Major) twinkleChords)
+twinkle = Tempo 3 (twinkleMelody :=: autoComp boogie (F,Major) twinkleChords)

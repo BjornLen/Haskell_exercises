@@ -88,12 +88,36 @@ patterns to choose from for both major and minor, in this assignement
 only the most common for major and minor are used and they are called
 ionian and aeolian respectively (see below). Furthermore the note supply
 also needs an octave to represent a set of unique pitches, in this assignement
-the melody is played with this octave set to four.
+the melody is played with this octave set to four. This leads us to construct
+the following types and definitions.
+
+\begin{verbatim}
+
+> data HarmonicQuality = Major | Minor
+>	deriving (Eq)
+> type Key = (PitchClass,HarmonicQuality)
+> type ScalePattern = [Int]
+> ionian, lydian, mixolydian, aeolian, dorian, phrygian :: ScalePattern
+> ionian	= [0, 2, 4, 5, 7 ,9, 11]
+> lydian	= [0, 2, 4, 6, 7, 9 ,11]
+> mixolydian	= [0, 2, 4, 5, 7, 9, 10]
+> aeolian	= [0, 2, 3, 5, 7, 8, 10]
+> dorian	= [0, 2, 3, 5 ,7, 9, 10]
+> phrygian	= [0, 1, 3, 5, 7, 8, 10]
+
+> noteSupply :: Pitch -> HarmonicQuality -> [AbsPitch]
+> noteSupply pitch quality 
+>	| quality == Major = map ((+) (absPitch pitch)) ionian
+>	| quality == Minor = map ((+) (absPitch pitch)) aeolian
+
+\end{verbatim}
 
 So given a note supply pitches for the notes on the note sheet are constructed
 from this supply by looking at their position in the sheet. The note that
 starts two steps below the bottom line in the sheet is the first in the note 
-supply and every subsequent step is are choosen from the pattern by  
+supply and every subsequent step is are choosen from the pattern �ncrementally.
+
+
 
 
 What is a key? Root + harmonic (C Major). 
@@ -117,27 +141,7 @@ This is the definition of a ChordProgression
 \section{Scale Patterns}
 ================================================================================
 
-Definierar två variabler major o minor för harmonic quality för enkelhet
-
-> data HarmonicQuality = Major | Minor
->	deriving (Eq)
-
-> type Key = (PitchClass,HarmonicQuality)
-
-================================================================================
-
 En listning av olika scalepatterns
-
-> type ScalePattern = [Int]
-
-> ionian, lydian, mixolydian, aeolian, dorian, phrygian :: ScalePattern
-> ionian	= [0, 2, 4, 5, 7 ,9, 11]
-> lydian	= [0, 2, 4, 6, 7, 9 ,11]
-> mixolydian	= [0, 2, 4, 5, 7, 9, 10]
-> aeolian	= [0, 2, 3, 5, 7, 8, 10]
-> dorian	= [0, 2, 3, 5 ,7, 9, 10]
-> phrygian	= [0, 1, 3, 5, 7, 8, 10]
-
 Väljer ett scalepattern baserat på om man har major eller minor och vilken
 position den aktuella noten har i grundskalan (typ C major)
 
@@ -162,11 +166,6 @@ Sen får man en lista med ABsPitches.
 
 ================================================================================
 
-> noteSupply :: Pitch -> HarmonicQuality -> [AbsPitch]
-> noteSupply pitch quality 
->	| quality == Major = map ((+) (absPitch pitch)) ionian
->	| quality == Minor = map ((+) (absPitch pitch)) aeolian
-
 Tar reda på positionen för en specifik pitch i en given grundskala.
 N�Nmn problem med att vi f�r ut sista index om den inte �terfinns.
 
@@ -185,7 +184,7 @@ N�Nmn problem med att vi f�r ut sista index om den inte �terfinns.
 
 Some properties for the bass line.
 
-> bassVol = [Volume 60]
+> bassVol = [Volume 100]
 > bassOct = 3 -- the base octave in the bass line
 
 De olika bass stylesen definierade.
@@ -250,7 +249,7 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 >	where 	candidates = genCandidates key cur 
 
 > score :: [[(AbsPitch,Dur)]] -> [(AbsPitch,dur)] -> [Int]
-> score candidates prev = zipWith (+) (map (1*) (in_d cur)) (map (2*) (ex_d cur (map (fst) prev)))
+> score candidates prev = zipWith (+) (map (3*) (in_d cur)) (map (2*) (ex_d cur (map (fst) prev)))
 >	where 	in_d pts  = [(maximum pt) - (minimum pt) |pt <- pts ]
 >		cur = map (map (fst)) candidates
 >		ex_d pts pre = [sum (map abs (zipWith (-) pt pre) ) | pt<-pts ]
@@ -275,7 +274,7 @@ Flätar ihop bass style och chordprogression en duration i taget (lite influense
 
 > initial = [(55,wn),(59,wn),(67,wn)] :: [(AbsPitch, Dur)] 
 
-> chordVol = [Volume 35]
+> chordVol = [Volume 10]
 
 > inversions = [[0,2,4],[2,4,0],[4,0,2],[2,4,0],[4,0,2],[4,2,0]]
 
@@ -287,7 +286,7 @@ Om vi vill göra ackord istället för enskilda noter bör det gå att göra hä
 
 > autoComp :: BassStyle -> Key -> ChordProgression -> Music
 > autoComp style key chords =
->	(Instr "Acoustic Bass" bass) :=: (Instr "Church Organ" chord_v)
+>	(Instr "Acoustic Bass" bass) :=: (Instr "Harpsichord" chord_v)
 >	where 	bass = autoBass style key chords
 >		chord_v = autoChord key chords
 
