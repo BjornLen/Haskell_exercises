@@ -1,4 +1,3 @@
-
 > similarityScore :: String -> String -> Int
 > similarityScore string1 string2 = 1
 
@@ -15,11 +14,31 @@
 
 > type AlignmentType = (String,String)
 > optAlignments :: String -> String -> [AlignmentType]
-> optAlignments string1 string2 = [("Im an","alignmenttype")]
+> optAlignments string1 string2 = 
+>               maximaBy scoreAlignments $ genAllComb string1 string2
+
+> genAllComb :: String -> String -> [(String,String)]
+> genAllComb [] [] = [([],[])]
+> genAllComb (x:xs) [] = attachHeads x '_' $ genAllComb xs []
+> genAllComb [] (y:ys) = attachHeads '_' y $ genAllComb [] ys
+> genAllComb (x:xs) (y:ys) = concat [c1,c2,c3]
+>               where
+>                   c1 = attachHeads x   y $ genAllComb xs ys
+>                   c2 = attachHeads '_' y $ genAllComb (x:xs) ys
+>                   c3 = attachHeads x '_' $ genAllComb xs (y:ys)
 
 > scoreMatch = 0
 > scoreMismatch = -1
 > scoreSpace = -1
+
+> scoreAlignments :: (String,String) -> Int
+> scoreAlignments ([],_) = 0
+> scoreAlignments (_,[]) = 0
+> scoreAlignments ((x:xs),(y:ys))
+>      | x == y = (0+) $ scoreAlignments (xs,ys)
+>      | x == '-' || y == '-' = (-1+) $ scoreAlignments (xs,ys)
+>      | x /= y = (-1+) $ scoreAlignments (xs,ys)
+
 
 > outputOptAlignments :: String -> String -> [String]
 > outputOptAlignments string1 string2 = [string1]   
