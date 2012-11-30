@@ -19,13 +19,13 @@
 
 > genAllComb :: String -> String -> [(String,String)]
 > genAllComb [] [] = [([],[])]
-> genAllComb (x:xs) [] = attachHeads x '_' $ genAllComb xs []
-> genAllComb [] (y:ys) = attachHeads '_' y $ genAllComb [] ys
+> genAllComb (x:xs) [] = attachHeads x '-' $ genAllComb xs []
+> genAllComb [] (y:ys) = attachHeads '-' y $ genAllComb [] ys
 > genAllComb (x:xs) (y:ys) = concat [c1,c2,c3]
 >               where
 >                   c1 = attachHeads x   y $ genAllComb xs ys
->                   c2 = attachHeads '_' y $ genAllComb (x:xs) ys
->                   c3 = attachHeads x '_' $ genAllComb xs (y:ys)
+>                   c2 = attachHeads '-' y $ genAllComb (x:xs) ys
+>                   c3 = attachHeads x '-' $ genAllComb xs (y:ys)
 
 > scoreMatch = 0
 > scoreMismatch = -1
@@ -35,10 +35,13 @@
 > scoreAlignments ([],_) = 0
 > scoreAlignments (_,[]) = 0
 > scoreAlignments ((x:xs),(y:ys))
->      | x == y = (0+) $ scoreAlignments (xs,ys)
->      | x == '-' || y == '-' = (-1+) $ scoreAlignments (xs,ys)
->      | x /= y = (-1+) $ scoreAlignments (xs,ys)
+>      | x == y = (scoreMatch+) $ scoreAlignments (xs,ys)
+>      | x == '-' || y == '-' = (scoreSpace+) $ scoreAlignments (xs,ys)
+>      | x /= y = (scoreMismatch+) $ scoreAlignments (xs,ys)
 
 
-> outputOptAlignments :: String -> String -> [String]
-> outputOptAlignments string1 string2 = [string1]   
+> outputOptAlignments :: String -> String -> IO ()
+> outputOptAlignments st1 st2= 
+>     putStrLn $ "\nThere are "++(show (length opts)) 
+>     ++" optimal alignments:\n"++ (concat opts)
+>       where   opts =  ["\n"++op1++"\n"++op2++"\n"|(op1,op2) <- (optAlignments st1 st2)]
