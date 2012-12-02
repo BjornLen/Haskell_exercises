@@ -110,7 +110,7 @@ Auxillary funtions.
 >                   c3 = attachHeads x '-' $ genAllComb xs (y:ys)
 
 
-> scoreMatch    = 1
+> scoreMatch    = 0
 > scoreMismatch = -1
 > scoreSpace    = -1
 
