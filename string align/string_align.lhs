@@ -13,6 +13,7 @@ Main funtions. I've kept the old, and inefficient, ones.
 > similarityScore_ineff string1 string2 =
 >             maximum (map scoreAlignments $ genAllComb string1 string2)
 
+
 > similarityScore :: String -> String -> Int
 > similarityScore xs ys = getOpts (length xs) (length ys)
 >     where
@@ -32,6 +33,7 @@ Main funtions. I've kept the old, and inefficient, ones.
 >             x = (xs!!(i-1))
 >             y = (ys!!(j-1))
 
+
 > optAlignments :: String -> String -> (Int,[AlignmentType])
 > optAlignments xs ys = getOpts (length xs) (length ys)
 >     where
@@ -48,18 +50,29 @@ Main funtions. I've kept the old, and inefficient, ones.
 >               new_score = scoreSpace + fst (optsTable!!0!!(j-1))
 >               new_p = attachTails '-' (ys!!(j-1)) (snd (optsTable!!0!!(j-1))) 
 >        optEntry i j
->          | x == y    = (scoreMatch+(fst (optsTable!!(i-1)!!(j-1)) ),  attachTails x y  (snd (optsTable!!(i-1)!!(j-1))))
+>          | x == y    = (scoreMatch + (fst prev_d),  attachTails x y  (snd prev_d))
 >          | otherwise = (maximum (map (fst) [ld,d,ud] ), concat $ map (snd) (maximaBy (fst) [ld,d,ud] ))
 >          where
->             ld = (scoreSpace+(fst (optsTable!!i!!(j-1))),  attachTails '-' (ys!!(j-1))   (snd (optsTable!!i!!(j-1))) )
->             d  = (scoreMismatch + (fst (optsTable!!(i-1)!!(j-1))), attachTails (xs!!(i-1)) (ys!!(j-1)) (snd (optsTable!!(i-1)!!(j-1))) )
->             ud = (scoreSpace+(fst (optsTable!!(i-1)!!j)),  attachTails  (xs!!(i-1)) '-'  (snd (optsTable!!(i-1)!!j)))
+>             ld = (scoreSpace + (fst prev_ld),  attachTails '-' y  (snd prev_ld ) )
+>             d  = (scoreMismatch + (fst prev_d ), attachTails x y (snd prev_d) )
+>             ud = (scoreSpace + (fst prev_ud),  attachTails  x '-'  (snd prev_ud))
 >             x = (xs!!(i-1))
 >             y = (ys!!(j-1))
+>             prev_ld = optsTable!!i!!(j-1)
+>             prev_d = optsTable!!(i-1)!!(j-1)
+>             prev_ud = optsTable!!(i-1)!!j
+
+
+> outputOptAlignments :: String -> String -> IO ()
+> outputOptAlignments st1 st2= 
+>     putStrLn $ "\nThere are "++(show (length opts)) 
+>     ++" optimal alignments:\n"++ (concat opts)
+>       where   opts =  ["\n"++op1++"\n"++op2++"\n"|(op1,op2) <- optAls]
+>               optAls = snd $ optAlignments st1 st2
+
 
 ========================================================================
 Auxillary funtions.
-
 
 > -- Takes a list of tuples, where the elements of the tuples are lists
 > -- aswell, and inserts h1 at the start of list 1 of the tuple and vice
@@ -75,8 +88,6 @@ Auxillary funtions.
 > maximaBy :: Ord b => (a -> b) -> [a] -> [a] 
 > maximaBy valueFcn xs = [x | x <- xs,(valueFcn x) == max_val]
 >           where max_val = maximum $ map valueFcn xs
-
-
 
 
 > genAllComb :: String -> String -> [(String,String)]
@@ -101,17 +112,4 @@ Auxillary funtions.
 >      | x == y = (scoreMatch+) $ scoreAlignments (xs,ys)
 >      | x == '-' || y == '-' = (scoreSpace+) $ scoreAlignments (xs,ys)
 >      | x /= y = (scoreMismatch+) $ scoreAlignments (xs,ys)
-
-
-
-
-
-              
-            
-
-
-
-
-
-
 
