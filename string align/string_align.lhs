@@ -1,3 +1,12 @@
+If we had acces to an algorithm for the string alignment problem we 
+could solve the maximal common subsequence problem by: 
+* Incur a large penalty for the case of mismatch or space. 
+* Give a large positive score for the case of matches. 
+This will create solutions where the common elements of the two lists
+are matched together. To obtain the maximal common subsequence the 
+lists can be checked against each other, and the maximal common 
+subsequence represents the entries that match. 
+
 ========================================================================
 Main funtions. I've kept the old, and inefficient, ones.
 
@@ -51,15 +60,15 @@ Main funtions. I've kept the old, and inefficient, ones.
 >               new_p = attachTails '-' (ys!!(j-1)) (snd (optsTable!!0!!(j-1))) 
 >        optEntry i j
 >          | x == y    = (scoreMatch + (fst prev_d),  attachTails x y  (snd prev_d))
->          | otherwise = (maximum (map (fst) [ld,d,ud] ), concat $ map (snd) (maximaBy (fst) [ld,d,ud] ))
+>          | otherwise = (maximum (map (fst) [ld,d,ud] ), concat $ map (snd) (maximaBy (fst) [ld,d,ud]))
 >          where
->             ld = (scoreSpace + (fst prev_ld),  attachTails '-' y  (snd prev_ld ) )
->             d  = (scoreMismatch + (fst prev_d ), attachTails x y (snd prev_d) )
->             ud = (scoreSpace + (fst prev_ud),  attachTails  x '-'  (snd prev_ud))
+>             ld = (scoreSpace    + (fst prev_ld), attachTails '-' y  (snd prev_ld))
+>             d  = (scoreMismatch + (fst prev_d ), attachTails x   y  (snd prev_d))
+>             ud = (scoreSpace    + (fst prev_ud), attachTails x '-'  (snd prev_ud))
 >             x = (xs!!(i-1))
 >             y = (ys!!(j-1))
 >             prev_ld = optsTable!!i!!(j-1)
->             prev_d = optsTable!!(i-1)!!(j-1)
+>             prev_d  = optsTable!!(i-1)!!(j-1)
 >             prev_ud = optsTable!!(i-1)!!j
 
 
@@ -101,9 +110,9 @@ Auxillary funtions.
 >                   c3 = attachHeads x '-' $ genAllComb xs (y:ys)
 
 
-> scoreMatch = 0
+> scoreMatch    = 1
 > scoreMismatch = -1
-> scoreSpace = -1
+> scoreSpace    = -1
 
 > scoreAlignments :: (String,String) -> Int
 > scoreAlignments ([],_) = 0
