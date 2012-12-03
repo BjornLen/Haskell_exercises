@@ -1,7 +1,7 @@
 If we had acces to an algorithm for the string alignment problem we 
 could solve the maximal common subsequence problem by: 
-* Incur a large penalty for the case of mismatch or space. 
-* Give a large positive score for the case of matches. 
+* Assign zero points to space or mismatch
+* Assign a positive, > 0, point to match. 
 This will create solutions where the common elements of the two lists
 are matched together. To obtain the maximal common subsequence the 
 lists can be checked against each other, and the maximal common 
