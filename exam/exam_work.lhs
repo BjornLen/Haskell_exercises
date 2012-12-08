@@ -57,7 +57,55 @@ So how would we do it?
 
 What is the type of the following functiong and what does it do?
 
-h f = fst . head . dropWhile( uncurry (/=)) . ps (iterate f)
+> h f = fst . head . dropWhile( uncurry (/=)) . ps (iterate f)
+>			where 	ps g x = zip (tail (g x)) (g x)
+
+From iterate f x we get:
+[x , f x, f ( f x) , ...]
+From tail iterate f x we get
+[f x, f (f x) , ...]
+
+And these are zipped together, thus we get from ps:
+[(x, f x), (f x, f ( f x)), ..]
+
+Then dropWhile uncurry filters this list to only allow tuples where the 
+elements are equal. fst and head then extract the first element of the first
+such pair. Thus we should get 100 if we apply it to the function below: 
+
+> f x  
+>	| x < 10 = x + 1 
+>	| otherwise = 100
+
+> test_understood = (h f 1) == 100
+
+
+:4
+
+> f2 key x
+>	| x == Just(a) = Just (a)
+>	| x == key = Just(x)
+>	| otherwise = Nothing
+
+
+
+
+
+
+Tenta 18/12-01
+
+1:
+En funktion f har typen:
+f::(Ord a, Num b) => a -> [b] -> [(a,[b])]
+Beskriv denna typ i ord:
+
+Så första viktiga egenskapen är (Ord a, Num b) =>
+vilket ställer krav på vilka typer a och b får bestå av.
+Syntaxen betyder att a måste vara av en ordnad typ i haskell,
+
+
+
+
+
 
 
 
