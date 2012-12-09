@@ -3,16 +3,17 @@ import Parser hiding (T)
 import qualified Statement
 import qualified Dictionary
 import Prelude hiding (return, fail)
-newtype T = Program  [Statement.T] 
+newtype T = Program  [Statement.T] deriving Show 
 instance Parse T where
-  parse = parse_stmts
+  parse = (iter Statement.parse) >-> getP  
   toString =  shw
 
-parse_stmts s
+getP ss = Program ss
+
 
 shw::T->String
-shw ss = toString ss
+shw (Program ss) = concat [toString s_i | s_i <-ss]
 
 
 
-exec (Program [stmts]) ins  = Statement.exec [stmts] Dictionary.empty ins
+exec (Program s) ins  = Statement.exec s Dictionary.empty ins

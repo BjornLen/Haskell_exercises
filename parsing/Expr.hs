@@ -72,7 +72,7 @@ shw prec (Div t u) = parens (prec>6) (shw 6 t ++ "/" ++ shw 7 u)
 
 value :: Expr -> Dictionary.T String Integer -> Integer
 value (Num n) _ = n 
-value (Var v) d = case Dictionary.lookup v d of -- Probably not ok, look for other sol.
+value (Var v) d = case Dictionary.lookup v d of -- Is there another solution not utilizing Maybe?
 			Just(a) -> a
 			Nothing -> error ("Undefined variable "++ v)
 value (Add t u) d = (value t d) + (value u d)

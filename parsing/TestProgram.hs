@@ -33,6 +33,7 @@ p1 = fromString  ("\
 \  end\
 \write s;")
 
+
 sp = putStr (toString p)
 
 rp = Program.exec p [3,16]

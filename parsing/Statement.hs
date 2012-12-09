@@ -45,24 +45,24 @@ exec (If cond thenStmts elseStmts: stmts) dict input =
     then exec (thenStmts: stmts) dict input
     else exec (elseStmts: stmts) dict input
 exec (Assignment v e : stmts ) dict input = 
-    exec stmts (Dictionary.insert (v, Expr.value e dict) dict) input
+    (exec stmts (Dictionary.insert (v, Expr.value e dict) dict) input)
 exec (Skip :stmts ) dict input = exec stmts dict input
 exec (Begin (s:ss) : stmts) dict input =
-    exec (s : (concat [ss,stmts])) dict input
-exec (While cond todo : stmts) dict input =
+   ( exec (s : (concat [ss,stmts])) dict input)
+exec (While cond todo : stmts) dict input = 
     if (Expr.value cond dict) > 0  
-    then exec [todo] dict input 
+    then exec (todo: (While cond todo:stmts)) dict input
     else exec stmts dict input
 exec (Read v :stmts) dict input =
-    exec stmts (Dictionary.insert (v, input !! 0 ) dict) (tail input) 
+  exec stmts (Dictionary.insert (v, input !! 0 ) dict) (tail input) 
 exec (Write e : stmts) dict input = 
     (Expr.value  e dict):(exec stmts dict input)
- 
+exec [] _ _ = [] 
 
 
 shw :: Statement -> String
 shw (If conf thenS elseS) = 
-    "if "++(toString conf)++">0 then\n"++(toString thenS)++"else\n"++(toString elseS)
+    "if "++(toString conf)++">0 then\n"++(toString thenS)++"else\n"++(toString elseS)++"endIf\n"
 shw (Skip) = "skip;\n"
 shw (Assignment v e ) = v++" := "++(toString e)++"\n"
 shw (While cond todo) = "While "++(toString cond)++">0 do \n"++(toString todo)
@@ -73,18 +73,3 @@ shw (Begin ss) = "begin\n"++(concat $ map toString ss)++"end;\n"
 instance Parse Statement where
   parse = stmt
   toString = shw
-	
-
-
-
-
-
-
-
-
-
-
-
-
-
-
